@@ -4,6 +4,8 @@
  * TODO: подключить форму к бэкенду или Formspree
  */
 
+'use client'
+
 import { useCompany } from '../hooks/useCompany'
 
 export default function Contacts() {
@@ -13,8 +15,8 @@ export default function Contacts() {
   const contactRows = contacts
     ? [
         { label: 'Адрес',    value: contacts.address, hint: `Шоурум: ${contacts.workHours.showroom}` },
-        { label: 'Телефон',  value: contacts.phone,   hint: `Звонок бесплатный, ${contacts.workHours.phone}` },
-        { label: 'Email',    value: contacts.email,   hint: 'Ответим в течение одного рабочего дня' },
+        { label: 'Телефон',  value: contacts.phone,   href: `tel:${contacts.phone.replace(/[^+\d]/g, '')}`, hint: `Звонок бесплатный, ${contacts.workHours.phone}` },
+        { label: 'Email',    value: contacts.email,   href: `mailto:${contacts.email}`, hint: 'Ответим в течение одного рабочего дня' },
       ]
     : []
 
@@ -26,24 +28,27 @@ export default function Contacts() {
           {/* Левый блок */}
           <div>
             <p className="section-label mb-2">Контакты</p>
-            <h2 className="section-title mb-6">Свяжитесь с нами</h2>
+            <h1 className="section-title mb-6">Свяжитесь с нами</h1>
             <p className="text-stone-500 leading-relaxed mb-10">
               Расскажите о вашем проекте — мы поможем подобрать мебель под
               интерьер, просчитаем стоимость и согласуем сроки.
             </p>
 
-            <div className="space-y-8">
-              {contactRows.map(({ label, value, hint }) => (
+            <address className="not-italic space-y-8">
+              {contactRows.map(({ label, value, href, hint }) => (
                 <div key={label} className="flex gap-6">
                   <div className="w-px bg-primary-300 self-stretch" />
                   <div>
                     <p className="text-xs text-stone-400 tracking-wide uppercase mb-1">{label}</p>
-                    <p className="text-stone-900 font-medium">{value}</p>
+                    {href
+                      ? <a href={href} className="text-stone-900 font-medium hover:text-primary-600 transition-colors">{value}</a>
+                      : <p className="text-stone-900 font-medium">{value}</p>
+                    }
                     <p className="text-xs text-stone-400 mt-0.5">{hint}</p>
                   </div>
                 </div>
               ))}
-            </div>
+            </address>
           </div>
 
           {/* Форма */}

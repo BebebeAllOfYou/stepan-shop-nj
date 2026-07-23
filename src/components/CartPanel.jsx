@@ -5,10 +5,13 @@
  * или нажатии на кнопку корзины в шапке.
  */
 
+'use client'
+
 import { useState } from 'react'
-import { Link }     from 'react-router-dom'
+import Link         from 'next/link'
 import { useCartContext } from '../context/CartContext'
 import { useTelegram }    from '../hooks/useTelegram'
+import { formatPhone, isPhoneComplete, PHONE_MAX_LENGTH } from '../utils/phoneMask'
 
 const fmt = n => Number(n).toLocaleString('ru-RU')
 
@@ -74,6 +77,10 @@ function OrderForm({ onSuccess }) {
 
   async function handleSubmit(e) {
     e.preventDefault()
+    if (!isPhoneComplete(phone)) {
+      e.target.querySelector('input[type="tel"]')?.focus()
+      return
+    }
     const ok = await sendOrder(items, { name, phone, comment })
     if (ok) {
       setSent(true)
@@ -115,8 +122,11 @@ function OrderForm({ onSuccess }) {
         <input
           required
           type="tel"
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={PHONE_MAX_LENGTH}
           value={phone}
-          onChange={e => setPhone(e.target.value)}
+          onChange={e => setPhone(formatPhone(e.target.value))}
           placeholder="+7 (___) ___-__-__"
           className="w-full border border-stone-200 bg-white px-3 py-2.5 text-sm
                      focus:outline-none focus:border-stone-800 transition-colors"
@@ -139,7 +149,7 @@ function OrderForm({ onSuccess }) {
 
       {error && (
         <p className="text-xs text-red-500 bg-red-50 border border-red-100 px-3 py-2">
-          Ошибка отправки: {error}. Проверьте настройки Telegram в <code>src/config/telegram.js</code>
+          Ошибка отправки: {error}
         </p>
       )}
 
@@ -215,7 +225,7 @@ export default function CartPanel() {
                 <span className="text-5xl">🛒</span>
                 <p className="text-stone-500">Корзина пуста</p>
                 <p className="text-stone-400 text-sm">Добавьте товары из каталога</p>
-                <Link to="/catalog" onClick={handleClose} className="btn-outline text-xs mt-2">
+                <Link href="/catalog" onClick={handleClose} className="btn-outline text-xs mt-2">
                   Перейти в каталог
                 </Link>
               </div>

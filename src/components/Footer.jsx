@@ -1,6 +1,6 @@
 /** Footer — подвал сайта */
 
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 
 const FOOTER_NAV = {
   'Каталог':     [
@@ -31,7 +31,7 @@ export default function Footer() {
 
         {/* Лого + описание */}
         <div className="col-span-2 md:col-span-1 space-y-4">
-          <Link to="/" className="font-display text-xl text-white tracking-tight block">
+          <Link href="/" className="font-display text-xl text-white tracking-tight block">
             СТЕПАН<span className="text-primary-500">.</span>
           </Link>
           <p className="text-sm leading-relaxed">
@@ -59,7 +59,7 @@ export default function Footer() {
             <ul className="space-y-2.5">
               {links.map(({ label, to }) => (
                 <li key={label}>
-                  <Link to={to} className="text-sm hover:text-white transition-colors">
+                  <Link href={to} className="text-sm hover:text-white transition-colors">
                     {label}
                   </Link>
                 </li>
@@ -75,8 +75,8 @@ export default function Footer() {
         <div className="container-site py-5 flex flex-col sm:flex-row justify-between gap-2 text-xs">
           <p>© {year} СТЕПАН. Все права защищены.</p>
           <div className="flex gap-6">
-            <Link to="/privacy" className="hover:text-white transition-colors">Конфиденциальность</Link>
-            <Link to="/terms"   className="hover:text-white transition-colors">Условия</Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">Конфиденциальность</Link>
+            <Link href="/terms"   className="hover:text-white transition-colors">Условия</Link>
           </div>
         </div>
       </div>

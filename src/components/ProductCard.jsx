@@ -5,9 +5,6 @@
  *   product: объект из products.json (включая wildberriesLink)
  */
 
-import { useState } from 'react'
-import { useCartContext } from '../context/CartContext'
-
 export default function ProductCard({ product = {}, onCardClick }) {
   const {
     name      = 'Название товара',
@@ -19,20 +16,6 @@ export default function ProductCard({ product = {}, onCardClick }) {
     wildberriesLink = null,
     inStock   = true,
   } = product
-
-  const { addToCart, items } = useCartContext()
-  const [added, setAdded]    = useState(false)
-
-  const inCart = items.some(i => i.id === product.id)
-
-  function handleAdd(e) {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!inStock) return
-    addToCart(product)
-    setAdded(true)
-    setTimeout(() => setAdded(false), 1500)
-  }
 
   const fmt = n => n.toLocaleString('ru-RU')
 
@@ -64,24 +47,6 @@ export default function ProductCard({ product = {}, onCardClick }) {
             Нет в наличии
           </span>
         </div>
-      )}
-
-      {/* Кнопка «В корзину» — появляется при наведении */}
-      {inStock && (
-        <button
-          onClick={handleAdd}
-          className={[
-            'absolute bottom-3 left-3 right-3 py-2 text-xs tracking-wide uppercase',
-            'transition-all duration-200 font-medium',
-            added
-              ? 'bg-green-600 text-white opacity-100'
-              : inCart
-              ? 'bg-stone-900 text-white opacity-0 group-hover:opacity-100'
-              : 'bg-white text-stone-900 border border-stone-200 opacity-0 group-hover:opacity-100 hover:bg-stone-900 hover:text-white hover:border-stone-900',
-          ].join(' ')}
-        >
-          {added ? '✓ Добавлено' : inCart ? `В корзине (${items.find(i => i.id === product.id)?.qty})` : '+ В корзину'}
-        </button>
       )}
     </>
   )

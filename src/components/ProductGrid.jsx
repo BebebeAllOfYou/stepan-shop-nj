@@ -11,6 +11,8 @@
  *   3. В products.json укажите нужный category у товаров
  */
 
+'use client'
+
 import { useRef, useState } from 'react'
 import { useProducts }      from '../hooks/useProducts'
 import ProductCard          from './ProductCard'
@@ -149,7 +151,7 @@ export default function ProductGrid() {
         {/* ── Заголовок ── */}
         <div className="mb-12">
           <p className="section-label mb-2">Каталог</p>
-          <h2 className="section-title">Наши коллекции</h2>
+          <h1 className="section-title">Наши коллекции</h1>
         </div>
 
         {/* ── Карточки категорий ── */}
@@ -173,9 +175,9 @@ export default function ProductGrid() {
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pt-2 border-t border-stone-100"
         >
           <div className="flex items-baseline gap-3">
-            <h3 className="font-display text-xl text-stone-900">
+            <h2 className="font-display text-xl text-stone-900">
               {categories.find(c => c.id === activeCategory)?.label ?? 'Все товары'}
-            </h3>
+            </h2>
             {!loading && (
               <span className="text-sm text-stone-400">{totalFiltered} позиций</span>
             )}

@@ -5,6 +5,8 @@
  * Данные сохраняются в localStorage и восстанавливаются при перезагрузке.
  */
 
+'use client'
+
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
 
 const CartContext = createContext(null)
@@ -12,6 +14,7 @@ const CartContext = createContext(null)
 const STORAGE_KEY = 'furniture_cart_v1'
 
 function loadFromStorage() {
+  if (typeof window === 'undefined') return [] // на сервере (SSR) localStorage недоступен
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     return raw ? JSON.parse(raw) : []

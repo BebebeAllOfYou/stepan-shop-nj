@@ -1,5 +1,7 @@
 /**
- * useTelegram — хук для отправки сообщений через Telegram Bot API
+ * useTelegram — хук для отправки заявок через серверный роут /api/order
+ *
+ * Токен бота хранится только на сервере (см. src/app/api/order/route.js).
  *
  * Поддерживает два типа заявок:
  *   sendOrder(items, customer)      — заказ из корзины
@@ -7,90 +9,23 @@
  */
 
 import { useState, useCallback } from 'react'
-import { TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID } from '../config/telegram'
 
-async function sendToTelegram(text) {
-  if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
-    console.warn('[useTelegram] Не заданы BOT_TOKEN или CHAT_ID в src/config/telegram.js')
-    throw new Error('Telegram не настроен — заполните src/config/telegram.js')
-  }
-
-  // URL строится здесь (не на уровне модуля), чтобы всегда использовать актуальный токен
-  const apiUrl = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`
-
+async function postOrder(payload) {
   let res
   try {
-    res = await fetch(apiUrl, {
+    res = await fetch('/api/order/', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({
-        chat_id:    TELEGRAM_CHAT_ID,
-        text,
-        parse_mode: 'HTML',
-      }),
+      body:    JSON.stringify(payload),
     })
-  } catch (networkErr) {
-    // fetch бросает TypeError при сетевой ошибке (нет интернета, CORS и т.д.)
-    console.error('[useTelegram] Сетевая ошибка:', networkErr)
-    throw new Error('Нет соединения с Telegram. Проверьте интернет и токен бота.')
+  } catch {
+    throw new Error('Нет соединения с сервером. Проверьте интернет.')
   }
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))
-    throw new Error(err.description ?? `HTTP ${res.status}`)
+    throw new Error(err.error ?? `HTTP ${res.status}`)
   }
-}
-
-/** Форматирует дату и время по московскому времени */
-function nowMSK() {
-  return new Date().toLocaleString('ru-RU', {
-    timeZone:    'Europe/Moscow',
-    day:         '2-digit',
-    month:       '2-digit',
-    year:        'numeric',
-    hour:        '2-digit',
-    minute:      '2-digit',
-  })
-}
-
-/** Строит текст заявки-заказа из корзины */
-function buildOrderText(items, customer) {
-  const fmt = n => Number(n).toLocaleString('ru-RU')
-
-  const lines = items.map(item =>
-    `• <b>${item.name}</b> — ${item.qty} шт. × ${fmt(item.price)} ₽ = ${fmt(item.price * item.qty)} ₽`
-  )
-
-  const total = items.reduce((s, i) => s + i.price * i.qty, 0)
-
-  return [
-    '🛒 <b>НОВЫЙ ЗАКАЗ</b>',
-    '',
-    `👤 Клиент: ${customer.name}`,
-    `📞 Телефон: ${customer.phone}`,
-    customer.comment ? `💬 Комментарий: ${customer.comment}` : '',
-    '',
-    '<b>Состав заказа:</b>',
-    ...lines,
-    '',
-    `💰 <b>Итого: ${fmt(total)} ₽</b>`,
-    '',
-    `🕐 ${nowMSK()}`,
-  ].filter(l => l !== null && l !== undefined).join('\n')
-}
-
-/** Строит текст заявки на партнёрство */
-function buildPartnershipText(data) {
-  return [
-    '🤝 <b>ЗАЯВКА НА ПАРТНЁРСТВО</b>',
-    '',
-    `🏢 Компания / Имя: ${data.company}`,
-    `📞 Телефон: ${data.phone}`,
-    `📦 Объём закупки: ${data.volume || 'не указан'}`,
-    data.comment ? `💬 Комментарий: ${data.comment}` : '',
-    '',
-    `🕐 ${nowMSK()}`,
-  ].filter(Boolean).join('\n')
 }
 
 export function useTelegram() {
@@ -101,7 +36,7 @@ export function useTelegram() {
     setSending(true)
     setError(null)
     try {
-      await sendToTelegram(buildOrderText(items, customer))
+      await postOrder({ type: 'order', items, customer })
       return true
     } catch (e) {
       setError(e.message)
@@ -115,7 +50,7 @@ export function useTelegram() {
     setSending(true)
     setError(null)
     try {
-      await sendToTelegram(buildPartnershipText(data))
+      await postOrder({ type: 'partnership', data })
       return true
     } catch (e) {
       setError(e.message)

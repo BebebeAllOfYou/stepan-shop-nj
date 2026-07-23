@@ -3,7 +3,9 @@
  * Данные загружаются динамически из /public/data/gallery.json через useGallery()
  */
 
-import { Link }       from 'react-router-dom'
+'use client'
+
+import Link           from 'next/link'
 import { useGallery } from '../hooks/useGallery'
 
 function GalleryCard({ item, className = '' }) {
@@ -49,7 +51,7 @@ export default function InteriorGallery() {
         {/* Заголовок */}
         <div className="mb-10 max-w-xl">
           <p className="section-label mb-2">Интерьеры</p>
-          <h2 className="section-title">Готовые проекты наших клиентов</h2>
+          <h1 className="section-title">Готовые проекты наших клиентов</h1>
           <p className="text-stone-500 mt-3 leading-relaxed">
             Стеновые панели и вешалки для любого интерьера. Вдохновляйтесь готовыми решениями
             и выбирайте сочетания, которые идеально подойдут вашему пространству.
@@ -72,7 +74,7 @@ export default function InteriorGallery() {
 
         {/* Ссылка на все проекты */}
         <div className="mt-8 text-center">
-          <Link to="/gallery" className="btn-outline">Все проекты</Link>
+          <Link href="/gallery" className="btn-outline">Все проекты</Link>
         </div>
 
       </div>

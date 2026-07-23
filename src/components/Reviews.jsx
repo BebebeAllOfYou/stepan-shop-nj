@@ -4,6 +4,8 @@
  * TODO: добавить слайдер (Swiper.js) для мобильных
  */
 
+'use client'
+
 import { useReviews } from '../hooks/useReviews'
 
 function StarRating({ rating, size = 'md' }) {
@@ -35,9 +37,9 @@ export default function Reviews() {
         <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <p className="section-label text-primary-400 mb-2">Отзывы</p>
-            <h2 className="font-display text-3xl md:text-4xl text-white leading-tight">
+            <h1 className="font-display text-3xl md:text-4xl text-white leading-tight">
               Что говорят<br />наши клиенты
-            </h2>
+            </h1>
           </div>
 
           {/* Сводный рейтинг из JSON */}

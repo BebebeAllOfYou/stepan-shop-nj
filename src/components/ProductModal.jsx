@@ -15,20 +15,15 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
-import { useCartContext } from '../context/CartContext'
 import { useGallery }     from '../hooks/useGallery'
 
 const fmt = n => Number(n).toLocaleString('ru-RU')
 
 export default function ProductModal({ product, onClose }) {
-  const { addToCart, items }       = useCartContext()
   const { getInteriorsForProduct }  = useGallery()
 
   // Индекс открытого фото в полноэкранном лайтбоксе (null = закрыт)
   const [lightboxIndex, setLightboxIndex] = useState(null)
-
-  const inCart = product ? items.some(i => i.id === product.id) : false
-  const qty    = product ? (items.find(i => i.id === product.id)?.qty ?? 0) : 0
 
   // Динамически получаем интерьеры именно для этого товара
   const productInteriors = product ? getInteriorsForProduct(product, 6) : []
@@ -229,24 +224,11 @@ export default function ProductModal({ product, onClose }) {
 
               {/* Кнопки действий */}
               <div className="mt-auto pt-2 flex flex-col gap-3">
-                {inStock ? (
-                  <button
-                    onClick={handleAdd}
-                    className="w-full btn-primary justify-center"
-                  >
-                    {inCart ? `✓ В корзине (${qty} шт.) — добавить ещё` : '+ В корзину'}
-                  </button>
-                ) : (
-                  <button disabled className="w-full btn-primary justify-center opacity-40 cursor-not-allowed">
-                    Нет в наличии
-                  </button>
-                )}
-
                 <button
                   onClick={onClose}
                   className="w-full btn-outline justify-center text-sm"
                 >
-                  Продолжить покупки
+                  Закрыть
                 </button>
               </div>
 

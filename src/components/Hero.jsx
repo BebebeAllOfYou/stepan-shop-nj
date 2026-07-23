@@ -3,7 +3,9 @@
  * Статистика загружается из /public/data/company.json через useCompany()
  */
 
-import { Link }       from 'react-router-dom'
+'use client'
+
+import Link           from 'next/link'
 import { useCompany } from '../hooks/useCompany'
 
 export default function Hero() {
@@ -40,8 +42,8 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-wrap gap-4 pt-2">
-            <Link to="/catalog" className="btn-primary">Смотреть каталог</Link>
-            <Link to="/gallery"  className="btn-outline">Интерьеры</Link>
+            <Link href="/catalog" className="btn-primary">Смотреть каталог</Link>
+            <Link href="/gallery"  className="btn-outline">Интерьеры</Link>
           </div>
 
           {/* Цифры из company.json */}
