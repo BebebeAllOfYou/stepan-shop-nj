@@ -8,6 +8,10 @@
       "oldPrice": null,
       "badge": null,
       "image": "/images/products/product_1.jpg",
+      "images": [
+        "/images/products/product_1.jpg",
+        "/images/products/product_1/photo_1.jpg"
+      ],
       "description": "Декоративная прямая рейка из МДФ 6 мм. Комплект 4 штуки.",
       "materials": ["МДФ 6 мм"],
       "wildberriesLink": null,
