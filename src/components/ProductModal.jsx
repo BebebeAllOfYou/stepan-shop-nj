@@ -52,7 +52,7 @@ export default function ProductModal({ product, onClose }) {
       {/* ── Основной оверлей предпросмотра товара ── */}
       <div
         onClick={onClose}
-        className="fixed inset-0 z-50 bg-stone-950/60 backdrop-blur-sm
+        className="fixed inset-0 z-[70] bg-stone-950/60 backdrop-blur-sm
                    animate-[fadeIn_0.2s_ease]"
       />
 
@@ -61,7 +61,7 @@ export default function ProductModal({ product, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label={name}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none"
+        className="fixed inset-0 z-[70] flex items-center justify-center p-4 pointer-events-none"
       >
         <div
           className="relative bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto

@@ -1,14 +1,15 @@
 /**
  * InteriorGallery — галерея готовых интерьеров
  * Данные загружаются динамически из /public/data/gallery.json через useGallery()
- * Поддерживает полноэкранный Lightbox с листалкой и кнопкой перехода к товару.
+ * Поддерживает полноэкранный Lightbox с листалкой и быструю открытие карточки товара.
  */
 
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import Link           from 'next/link'
 import { useGallery } from '../hooks/useGallery'
+import { useFetch }   from '../hooks/useFetch'
+import ProductModal   from './ProductModal'
 
 function GalleryCard({ item, onClick }) {
   if (!item) return null
@@ -49,9 +50,12 @@ function GalleryCard({ item, onClick }) {
 
 export default function InteriorGallery() {
   const { gallery, loading } = useGallery()
-  const [lightboxIndex, setLightboxIndex] = useState(null)
+  const { data: productsData } = useFetch('/data/products.json')
 
-  // `gallery` уже отфильтрована в useGallery по наличии изображения (Boolean(item.image))
+  const [lightboxIndex, setLightboxIndex] = useState(null)
+  const [selectedProduct, setSelectedProduct] = useState(null)
+
+  // `gallery` уже отфильтрована в useGallery по наличии изображения
   const items = gallery
 
   const prevLightboxImage = useCallback(() => {
@@ -64,21 +68,42 @@ export default function InteriorGallery() {
 
   // Навигация с клавиатуры (Esc, ←, →)
   const handleKey = useCallback((e) => {
+    if (selectedProduct !== null) return // Если открыто окно товара, не перехватываем клавиши
     if (lightboxIndex === null) return
     if (e.key === 'Escape')     setLightboxIndex(null)
     if (e.key === 'ArrowLeft')  prevLightboxImage()
     if (e.key === 'ArrowRight') nextLightboxImage()
-  }, [lightboxIndex, prevLightboxImage, nextLightboxImage])
+  }, [lightboxIndex, selectedProduct, prevLightboxImage, nextLightboxImage])
 
   useEffect(() => {
-    if (lightboxIndex === null) return
+    if (lightboxIndex === null || selectedProduct !== null) return
     document.addEventListener('keydown', handleKey)
     document.body.style.overflow = 'hidden'
     return () => {
       document.removeEventListener('keydown', handleKey)
       document.body.style.overflow = ''
     }
-  }, [lightboxIndex, handleKey])
+  }, [lightboxIndex, selectedProduct, handleKey])
+
+  // Открытие модального окна товара
+  function handleOpenProduct(item) {
+    const allProds = productsData?.products ?? []
+    const found = allProds.find(p => p.id === item.productId) || 
+                  allProds.find(p => p.name && p.name.toLowerCase().includes(item.productName?.toLowerCase()))
+
+    if (found) {
+      setSelectedProduct(found)
+    } else {
+      setSelectedProduct({
+        id: item.productId || item.id,
+        name: item.productName || item.title,
+        category: item.category || 'Панели',
+        price: 0,
+        image: item.image,
+        description: item.title,
+      })
+    }
+  }
 
   const currentItem = lightboxIndex !== null ? items[lightboxIndex] : null
 
@@ -105,7 +130,7 @@ export default function InteriorGallery() {
           </div>
         )}
 
-        {/* Полная сетка всех интерьеров (без лимита в 5 фото) */}
+        {/* Полная сетка всех интерьеров */}
         {!loading && items.length > 0 && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
             {items.map((item, idx) => (
@@ -126,13 +151,13 @@ export default function InteriorGallery() {
 
       </div>
 
-      {/* ── 🔍 ПОЛНОЭКРАННЫЙ ЛАЙТБОКС С ЛИСТАЛКОЙ И КНОПКОЙ ТОВАРА ── */}
+      {/* ── 🔍 ПОЛНОЭКРАННЫЙ ЛАЙТБОКС С ЛИСТАЛКОЙ ── */}
       {lightboxIndex !== null && currentItem && (
         <div
           className="fixed inset-0 z-[60] bg-stone-950/95 backdrop-blur-md flex flex-col justify-between p-4 md:p-8 animate-[fadeIn_0.2s_ease]"
           onClick={() => setLightboxIndex(null)}
         >
-          {/* Верхняя панель: инфо, счётчик и кнопка закрытия ✕ */}
+          {/* Верхняя панель: инфо, кликабельное название товара, счётчик и ✕ */}
           <div
             className="w-full max-w-6xl mx-auto flex items-center justify-between text-white z-10"
             onClick={e => e.stopPropagation()}
@@ -147,9 +172,17 @@ export default function InteriorGallery() {
                 {currentItem.title}
               </h3>
               {currentItem.productName && (
-                <p className="text-xs text-stone-400 mt-0.5">
-                  Товар: <span className="text-stone-200">{currentItem.productName}</span>
-                </p>
+                <div className="mt-1.5 flex items-center gap-2">
+                  <span className="text-xs text-stone-400">Товар:</span>
+                  <button
+                    onClick={() => handleOpenProduct(currentItem)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1 bg-stone-800 hover:bg-primary-600 text-white text-xs font-medium rounded-full transition-colors group cursor-pointer border border-white/10"
+                    title="Открыть предпросмотр товара"
+                  >
+                    <span>{currentItem.productName}</span>
+                    <span className="text-primary-300 group-hover:text-white transition-transform group-hover:translate-x-0.5">→</span>
+                  </button>
+                </div>
               )}
             </div>
 
@@ -192,7 +225,7 @@ export default function InteriorGallery() {
             <img
               src={currentItem.image}
               alt={currentItem.title}
-              className="max-h-[72vh] max-w-full object-contain shadow-2xl rounded-sm transition-all duration-300 select-none"
+              className="max-h-[78vh] max-w-full object-contain shadow-2xl rounded-sm transition-all duration-300 select-none"
             />
 
             {/* Стрелка ВПРАВО */}
@@ -207,28 +240,14 @@ export default function InteriorGallery() {
               </button>
             )}
           </div>
-
-          {/* Нижняя панель: Кнопка перехода к товару + подсказка клавиш */}
-          <div
-            className="w-full max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left z-10 pt-2 border-t border-white/10"
-            onClick={e => e.stopPropagation()}
-          >
-            <div className="text-xs text-stone-400">
-              Листайте стрелками <kbd className="bg-stone-800 px-1.5 py-0.5 rounded text-stone-300">←</kbd> <kbd className="bg-stone-800 px-1.5 py-0.5 rounded text-stone-300">→</kbd> или нажмите <kbd className="bg-stone-800 px-1.5 py-0.5 rounded text-stone-300">Esc</kbd>
-            </div>
-
-            {/* Кнопка "Смотреть товар в каталоге" */}
-            <Link
-              href="/catalog"
-              onClick={() => setLightboxIndex(null)}
-              className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white text-xs font-medium tracking-wide uppercase rounded transition-colors flex items-center gap-2 shadow-lg"
-            >
-              <span>Смотреть в каталоге</span>
-              <span>→</span>
-            </Link>
-          </div>
         </div>
       )}
+
+      {/* Модальное окно предпросмотра товара */}
+      <ProductModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </section>
   )
 }
