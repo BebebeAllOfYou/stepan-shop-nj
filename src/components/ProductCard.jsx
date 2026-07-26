@@ -42,6 +42,7 @@ export default function ProductCard({ product = {}, onCardClick }) {
       `${folder}/photo_1.jpg`,
       `${folder}/photo_2.jpg`,
       `${folder}/photo_3.jpg`,
+      `${folder}/photo_4.jpg`,
     ].filter(Boolean)
   }, [id, image, images])
 
@@ -80,7 +81,7 @@ export default function ProductCard({ product = {}, onCardClick }) {
   // ── Рендер фото-блока ───────────────────────────────────────────────────────
   const PhotoBlock = (
     <div
-      className="relative w-full h-full"
+      className="absolute inset-0"
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
     >
