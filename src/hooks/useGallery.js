@@ -14,7 +14,7 @@ import { useFetch } from './useFetch'
 
 export function useGallery() {
   const { data, loading, error } = useFetch('/data/gallery.json')
-  const gallery = data?.gallery ?? []
+  const gallery = (data?.gallery ?? []).filter(item => Boolean(item.image))
 
   /**
    * Возвращает отфильтрованные интерьеры для конкретного товара
