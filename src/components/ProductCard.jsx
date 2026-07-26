@@ -88,7 +88,7 @@ export default function ProductCard({ product = {}, onCardClick }) {
       {validImages.length > 0 ? (
         validImages.map((src, idx) => (
           <img
-            key={src}                          {/* ключ по URL, а не индексу */}
+            key={src}
             src={src}
             alt={`${name} — фото ${idx + 1}`}
             onError={() => handleImageError(src)}
