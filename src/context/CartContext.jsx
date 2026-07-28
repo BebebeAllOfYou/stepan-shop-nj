@@ -9,7 +9,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useEffect } from 'react'
-import { getProductDiscounts, calculateDiscountPrice } from '../utils/discountCalculator'
+import { calculateCartDiscount, DEFAULT_DISCOUNT_TIERS } from '../utils/discountCalculator'
 
 const CartContext = createContext(null)
 
@@ -63,12 +63,9 @@ export function CartProvider({ children }) {
 
   const totalItems = items.reduce((s, i) => s + i.qty, 0)
 
-  // Итоговая сумма корзины с учётом скидок от количества
-  const totalPrice = items.reduce((sum, item) => {
-    const tiers = getProductDiscounts(item)
-    const calc  = calculateDiscountPrice(item.price, item.qty, tiers)
-    return sum + calc.totalPrice
-  }, 0)
+  // Итоговая стоимость с учётом суммовой скидки по всей корзине
+  const cartDiscount = calculateCartDiscount(items, DEFAULT_DISCOUNT_TIERS)
+  const totalPrice   = cartDiscount.totalPrice
 
   return (
     <CartContext.Provider value={{
