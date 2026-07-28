@@ -1,10 +1,7 @@
 /**
- * CartPanel — выдвижная панель корзины с встроенным калькулятором скидки от суммы заказа
+ * CartPanel — выдвижная панель корзины с калькулятором скидок от суммы заказа
  *
- * Скидки по всей корзине:
- *   — от 100 000 ₽ → −10%
- *   — от 200 000 ₽ → −20%
- *   — от 350 000 ₽ → −30%
+ * Вместо автоматической формы оформления заказа выводится карточка обращения к менеджеру по телефону.
  */
 
 'use client'
@@ -12,8 +9,7 @@
 import { useState } from 'react'
 import Link         from 'next/link'
 import { useCartContext } from '../context/CartContext'
-import { useTelegram }    from '../hooks/useTelegram'
-import { formatPhone, isPhoneComplete, PHONE_MAX_LENGTH } from '../utils/phoneMask'
+import { useCompany }     from '../hooks/useCompany'
 
 const fmt = n => Number(n).toLocaleString('ru-RU')
 
@@ -21,9 +17,9 @@ const fmt = n => Number(n).toLocaleString('ru-RU')
 function CartItem({ item, discountPercent }) {
   const { removeFromCart, updateQty } = useCartContext()
 
-  const unitPrice       = discountPercent > 0 ? Math.round(item.price * (1 - discountPercent / 100)) : item.price
-  const itemTotal       = unitPrice * item.qty
-  const itemBaseTotal   = item.price * item.qty
+  const unitPrice     = discountPercent > 0 ? Math.round(item.price * (1 - discountPercent / 100)) : item.price
+  const itemTotal     = unitPrice * item.qty
+  const itemBaseTotal = item.price * item.qty
 
   return (
     <div className="flex gap-3 py-3.5 border-b border-stone-100 last:border-0 items-center">
@@ -163,117 +159,44 @@ function DiscountCalculatorWidget({ cartDiscount }) {
   )
 }
 
-/** Форма контактных данных + кнопка отправки */
-function OrderForm({ onSuccess }) {
-  const { items, totalPrice, cartDiscount, clearCart } = useCartContext()
-  const { sendOrder, sending, error }    = useTelegram()
-
-  const [name,    setName]    = useState('')
-  const [phone,   setPhone]   = useState('')
-  const [comment, setComment] = useState('')
-  const [sent,    setSent]    = useState(false)
-
-  async function handleSubmit(e) {
-    e.preventDefault()
-    if (!isPhoneComplete(phone)) {
-      e.target.querySelector('input[type="tel"]')?.focus()
-      return
-    }
-    const ok = await sendOrder(items, { name, phone, comment, cartDiscount })
-    if (ok) {
-      setSent(true)
-      clearCart()
-      setTimeout(onSuccess, 2000)
-    }
-  }
-
-  if (sent) {
-    return (
-      <div className="flex flex-col items-center justify-center py-10 text-center gap-3">
-        <span className="text-4xl">✅</span>
-        <p className="font-display text-stone-900 text-lg">Заявка отправлена!</p>
-        <p className="text-stone-500 text-sm">Менеджер свяжется с вами в ближайшее время.</p>
-      </div>
-    )
-  }
+/** Блок контакта с менеджером вместо кнопки «Оформить заявку» */
+function ManagerContactBox() {
+  const { company } = useCompany()
+  const phone = company?.contacts?.phone ?? '+7 (999) 123-45-67'
+  const cleanPhone = phone.replace(/[^\d+]/g, '')
+  const workHours  = company?.contacts?.workHours?.phone ?? 'пн–вс 9:00–21:00'
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-xs text-stone-500 uppercase tracking-wide mb-1.5">
-          Ваше имя *
-        </label>
-        <input
-          required
-          value={name}
-          onChange={e => setName(e.target.value)}
-          placeholder="Иван Иванов"
-          className="w-full border border-stone-200 bg-white px-3 py-2.5 text-sm
-                     focus:outline-none focus:border-stone-800 transition-colors"
-        />
-      </div>
-
-      <div>
-        <label className="block text-xs text-stone-500 uppercase tracking-wide mb-1.5">
-          Телефон *
-        </label>
-        <input
-          required
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          maxLength={PHONE_MAX_LENGTH}
-          value={phone}
-          onChange={e => setPhone(formatPhone(e.target.value))}
-          placeholder="+7 (___) ___-__-__"
-          className="w-full border border-stone-200 bg-white px-3 py-2.5 text-sm
-                     focus:outline-none focus:border-stone-800 transition-colors"
-        />
-      </div>
-
-      <div>
-        <label className="block text-xs text-stone-500 uppercase tracking-wide mb-1.5">
-          Комментарий
-        </label>
-        <textarea
-          rows={2}
-          value={comment}
-          onChange={e => setComment(e.target.value)}
-          placeholder="Пожелания по доставке, срокам..."
-          className="w-full border border-stone-200 bg-white px-3 py-2.5 text-sm
-                     focus:outline-none focus:border-stone-800 transition-colors resize-none"
-        />
-      </div>
-
-      {error && (
-        <p className="text-xs text-red-500 bg-red-50 border border-red-100 px-3 py-2">
-          Ошибка отправки: {error}
+    <div className="bg-stone-900 text-white rounded-xl p-4 space-y-3 text-center shadow-md">
+      <div className="space-y-1">
+        <p className="text-xs text-stone-300 font-medium leading-relaxed">
+          Для оформления заказа обратитесь к нашему менеджеру
         </p>
-      )}
+      </div>
 
-      <button
-        type="submit"
-        disabled={sending || items.length === 0}
-        className="w-full btn-primary justify-center disabled:opacity-50 disabled:cursor-not-allowed"
+      <a
+        href={`tel:${cleanPhone}`}
+        className="inline-flex items-center justify-center gap-2 w-full py-3 px-4
+                   bg-primary-600 hover:bg-primary-500 text-white text-base font-bold
+                   rounded-lg transition-colors shadow-sm"
       >
-        {sending ? 'Отправляем...' : `Отправить заявку (${fmt(totalPrice)} ₽)`}
-      </button>
+        <span>📞</span>
+        <span>{phone}</span>
+      </a>
 
-      <p className="text-xs text-stone-400 text-center">
-        Менеджер перезвонит и уточнит детали заказа
+      <p className="text-[11px] text-stone-400">
+        Приём звонков: {workHours}
       </p>
-    </form>
+    </div>
   )
 }
 
 /** Основной компонент — выдвижная панель */
 export default function CartPanel() {
   const { items, totalPrice, totalItems, cartDiscount, isOpen, setIsOpen } = useCartContext()
-  const [step, setStep] = useState('cart') // 'cart' | 'form'
 
   function handleClose() {
     setIsOpen(false)
-    setTimeout(() => setStep('cart'), 300)
   }
 
   return (
@@ -297,17 +220,9 @@ export default function CartPanel() {
       >
         {/* Шапка панели */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setStep('cart')}
-              className={step === 'form' ? 'text-stone-400 hover:text-stone-900 transition-colors text-sm' : 'hidden'}
-            >
-              ← Корзина
-            </button>
-            <h2 className="font-display text-xl text-stone-900">
-              {step === 'cart' ? `Корзина (${totalItems})` : 'Оформление'}
-            </h2>
-          </div>
+          <h2 className="font-display text-xl text-stone-900">
+            Корзина заказа ({totalItems})
+          </h2>
           <button
             onClick={handleClose}
             className="text-stone-400 hover:text-stone-900 transition-colors text-2xl leading-none"
@@ -317,42 +232,36 @@ export default function CartPanel() {
 
         {/* Тело панели */}
         <div className="flex-1 overflow-y-auto px-6">
-          {step === 'cart' ? (
-            items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-20">
-                <span className="text-5xl">🛒</span>
-                <p className="text-stone-500">Корзина пуста</p>
-                <p className="text-stone-400 text-sm">Добавьте товары из каталога</p>
-                <Link href="/catalog" onClick={handleClose} className="btn-outline text-xs mt-2">
-                  Перейти в каталог
-                </Link>
-              </div>
-            ) : (
-              <div className="py-2">
-                {/* 🧮 Виджет калькулятора скидки от суммы заказа */}
-                <DiscountCalculatorWidget cartDiscount={cartDiscount} />
-
-                {/* Список товаров */}
-                {items.map(item => (
-                  <CartItem
-                    key={item.id}
-                    item={item}
-                    discountPercent={cartDiscount.discountPercent}
-                  />
-                ))}
-              </div>
-            )
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center gap-3 py-20">
+              <span className="text-5xl">🛒</span>
+              <p className="text-stone-500 font-medium">Корзина пуста</p>
+              <p className="text-stone-400 text-sm">Добавьте товары из каталога</p>
+              <Link href="/catalog" onClick={handleClose} className="btn-outline text-xs mt-2">
+                Перейти в каталог
+              </Link>
+            </div>
           ) : (
-            <div className="py-6">
-              <OrderForm onSuccess={handleClose} />
+            <div className="py-2">
+              {/* 🧮 Виджет калькулятора скидки от суммы заказа */}
+              <DiscountCalculatorWidget cartDiscount={cartDiscount} />
+
+              {/* Список товаров */}
+              {items.map(item => (
+                <CartItem
+                  key={item.id}
+                  item={item}
+                  discountPercent={cartDiscount.discountPercent}
+                />
+              ))}
             </div>
           )}
         </div>
 
-        {/* Итог + кнопка */}
-        {step === 'cart' && items.length > 0 && (
-          <div className="border-t border-stone-100 px-6 py-4 space-y-3 bg-stone-50/50">
-            <div className="space-y-1 text-sm">
+        {/* Итоговая сумма + контакт менеджера вместо кнопки формы */}
+        {items.length > 0 && (
+          <div className="border-t border-stone-100 px-6 py-4 space-y-4 bg-stone-50/50">
+            <div className="space-y-1.5 text-sm">
               <div className="flex justify-between text-stone-500">
                 <span>Сумма заказа:</span>
                 <span>{fmt(cartDiscount.baseTotal)} ₽</span>
@@ -371,15 +280,8 @@ export default function CartPanel() {
               </div>
             </div>
 
-            <button
-              onClick={() => setStep('form')}
-              className="w-full btn-primary justify-center py-3"
-            >
-              Оформить заявку
-            </button>
-            <p className="text-[11px] text-stone-400 text-center">
-              Без предоплаты — менеджер уточнит все детали
-            </p>
+            {/* Карточка обращения к менеджеру */}
+            <ManagerContactBox />
           </div>
         )}
       </aside>
