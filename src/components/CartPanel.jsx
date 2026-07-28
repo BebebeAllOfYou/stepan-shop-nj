@@ -12,6 +12,7 @@ import Link         from 'next/link'
 import { useCartContext } from '../context/CartContext'
 import { useTelegram }    from '../hooks/useTelegram'
 import { formatPhone, isPhoneComplete, PHONE_MAX_LENGTH } from '../utils/phoneMask'
+import { getProductDiscounts, calculateDiscountPrice } from '../utils/discountCalculator'
 
 const fmt = n => Number(n).toLocaleString('ru-RU')
 
@@ -19,10 +20,13 @@ const fmt = n => Number(n).toLocaleString('ru-RU')
 function CartItem({ item }) {
   const { removeFromCart, updateQty } = useCartContext()
 
+  const tiers = getProductDiscounts(item)
+  const calc  = calculateDiscountPrice(item.price, item.qty, tiers)
+
   return (
     <div className="flex gap-3 py-4 border-b border-stone-100 last:border-0">
       {/* Фото или заглушка */}
-      <div className="w-16 h-20 bg-stone-100 flex-shrink-0 overflow-hidden">
+      <div className="w-16 h-20 bg-stone-100 flex-shrink-0 overflow-hidden relative">
         {item.image
           ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
           : <div className="w-full h-full flex items-center justify-center text-stone-300 text-xs">фото</div>
@@ -30,9 +34,23 @@ function CartItem({ item }) {
       </div>
 
       <div className="flex-1 min-w-0">
-        <p className="text-xs text-stone-400 uppercase tracking-wide">{item.category}</p>
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-xs text-stone-400 uppercase tracking-wide">{item.category}</span>
+          {calc.discountPercent > 0 && (
+            <span className="text-[10px] bg-emerald-100 text-emerald-700 font-semibold px-1.5 py-0.5 rounded">
+              -{calc.discountPercent}%
+            </span>
+          )}
+        </div>
         <p className="text-sm text-stone-900 font-medium leading-snug mt-0.5 truncate">{item.name}</p>
-        <p className="text-sm text-primary-600 font-medium mt-1">{fmt(item.price)} ₽</p>
+
+        <div className="flex items-baseline gap-1.5 mt-1">
+          <span className="text-sm text-primary-600 font-medium">{fmt(calc.unitPrice)} ₽</span>
+          <span className="text-xs text-stone-400">/ шт.</span>
+          {calc.discountPercent > 0 && (
+            <span className="text-xs text-stone-400 line-through ml-1">{fmt(item.price)} ₽</span>
+          )}
+        </div>
 
         {/* Количество */}
         <div className="flex items-center gap-2 mt-2">
@@ -42,7 +60,7 @@ function CartItem({ item }) {
                        hover:border-stone-800 hover:text-stone-900
                        flex items-center justify-center text-lg leading-none transition-colors"
           >−</button>
-          <span className="w-8 text-center text-sm tabular-nums">{item.qty}</span>
+          <span className="w-8 text-center text-sm tabular-nums font-medium">{item.qty}</span>
           <button
             onClick={() => updateQty(item.id, item.qty + 1)}
             className="w-7 h-7 border border-stone-200 text-stone-600
@@ -59,7 +77,12 @@ function CartItem({ item }) {
           className="text-stone-300 hover:text-red-400 transition-colors text-lg leading-none"
           aria-label="Удалить"
         >×</button>
-        <p className="text-sm font-medium text-stone-900">{fmt(item.price * item.qty)} ₽</p>
+        <div className="text-right">
+          {calc.discountPercent > 0 && (
+            <p className="text-[11px] text-emerald-600 font-medium">-{fmt(calc.totalSavings)} ₽</p>
+          )}
+          <p className="text-sm font-medium text-stone-900">{fmt(calc.totalPrice)} ₽</p>
+        </div>
       </div>
     </div>
   )
