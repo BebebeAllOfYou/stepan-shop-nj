@@ -2,7 +2,11 @@
  * CartContext — глобальное состояние корзины
  *
  * Оборачивает всё приложение. Даёт доступ к корзине через useCartContext().
- * Учитывает оптовые скидки от объема при подсчёте итоговой цены.
+ * Автоматически рассчитывает суммовую скидку по всей корзине:
+ *   — от 100 000 ₽ → −10%
+ *   — от 200 000 ₽ → −20%
+ *   — от 350 000 ₽ → −30%
+ *
  * Данные сохраняются в localStorage и восстанавливаются при перезагрузке.
  */
 
@@ -63,14 +67,14 @@ export function CartProvider({ children }) {
 
   const totalItems = items.reduce((s, i) => s + i.qty, 0)
 
-  // Итоговая стоимость с учётом суммовой скидки по всей корзине
+  // Расчёт объединенной суммовой скидки по всей корзине
   const cartDiscount = calculateCartDiscount(items, DEFAULT_DISCOUNT_TIERS)
   const totalPrice   = cartDiscount.totalPrice
 
   return (
     <CartContext.Provider value={{
       items, addToCart, removeFromCart, updateQty, clearCart,
-      totalItems, totalPrice,
+      totalItems, totalPrice, cartDiscount,
       isOpen, setIsOpen,
     }}>
       {children}

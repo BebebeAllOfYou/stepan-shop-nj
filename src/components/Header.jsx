@@ -1,8 +1,8 @@
 /**
- * Header — шапка сайта с адаптивной навигацией
+ * Header — шапка сайта с адаптивной навигацией и кнопкой корзины
  *
- * Desktop: горизонтальное меню
- * Mobile:  логотип + кнопка-бургер → выдвижной ящик
+ * Desktop: горизонтальное меню + кнопка корзины со счётчиком
+ * Mobile:  логотип + корзина + кнопка-бургер → выдвижной ящик
  */
 
 'use client'
@@ -10,6 +10,7 @@
 import { useState, useEffect } from 'react'
 import Link            from 'next/link'
 import { usePathname } from 'next/navigation'
+import { useCartContext } from '../context/CartContext'
 
 const NAV_LINKS = [
   { label: 'Каталог',   to: '/catalog',  emoji: '🛋️' },
@@ -23,11 +24,12 @@ const NAV_LINKS = [
 export default function Header() {
   const pathname    = (usePathname() ?? '/').replace(/\/+$/, '') || '/'
   const [open, setOpen] = useState(false)
+  const { totalItems, setIsOpen: openCart } = useCartContext()
 
   // Закрываем меню при смене страницы
   useEffect(() => { setOpen(false) }, [pathname])
 
-  // Блокируем скролл при открытом меню
+  // Блокируем скролл при открытом мобильном меню
   useEffect(() => {
     document.body.style.overflow = open ? 'hidden' : ''
     return () => { document.body.style.overflow = '' }
@@ -68,28 +70,56 @@ export default function Header() {
             })}
           </nav>
 
-          {/* Бургер-кнопка — только на мобиле */}
-          <button
-            onClick={() => setOpen(v => !v)}
-            aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
-            aria-expanded={open}
-            className="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-[5px]
-                       text-stone-700 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors"
-          >
-            <span className={[
-              'block w-5 h-[1.5px] bg-current rounded-full transition-all duration-300',
-              open ? 'translate-y-[6.5px] rotate-45' : '',
-            ].join(' ')} />
-            <span className={[
-              'block w-5 h-[1.5px] bg-current rounded-full transition-all duration-300',
-              open ? 'opacity-0 scale-x-0' : '',
-            ].join(' ')} />
-            <span className={[
-              'block w-5 h-[1.5px] bg-current rounded-full transition-all duration-300',
-              open ? '-translate-y-[6.5px] -rotate-45' : '',
-            ].join(' ')} />
-          </button>
+          {/* ── Правый блок: кнопка корзины + бургер ── */}
+          <div className="flex items-center gap-2 flex-shrink-0">
 
+            {/* Кнопка корзины */}
+            <button
+              onClick={() => openCart(true)}
+              aria-label={`Корзина (${totalItems})`}
+              className="relative w-10 h-10 flex items-center justify-center text-stone-700
+                         hover:text-stone-900 hover:bg-stone-100 rounded-full transition-colors"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"
+                className="w-5 h-5" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0
+                     00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114
+                     60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 110-1.5.75.75
+                     0 010 1.5zm10.5 0a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+              </svg>
+
+              {totalItems > 0 && (
+                <span className="absolute top-1 right-1 min-w-[18px] h-4 px-1 text-[10px] font-bold
+                                 bg-primary-600 text-white rounded-full flex items-center justify-center leading-none">
+                  {totalItems > 99 ? '99+' : totalItems}
+                </span>
+              )}
+            </button>
+
+            {/* Бургер-кнопка — только на мобиле */}
+            <button
+              onClick={() => setOpen(v => !v)}
+              aria-label={open ? 'Закрыть меню' : 'Открыть меню'}
+              aria-expanded={open}
+              className="md:hidden w-10 h-10 flex flex-col items-center justify-center gap-[5px]
+                         text-stone-700 hover:text-stone-900 rounded-full hover:bg-stone-100 transition-colors"
+            >
+              <span className={[
+                'block w-5 h-[1.5px] bg-current rounded-full transition-all duration-300',
+                open ? 'translate-y-[6.5px] rotate-45' : '',
+              ].join(' ')} />
+              <span className={[
+                'block w-5 h-[1.5px] bg-current rounded-full transition-all duration-300',
+                open ? 'opacity-0 scale-x-0' : '',
+              ].join(' ')} />
+              <span className={[
+                'block w-5 h-[1.5px] bg-current rounded-full transition-all duration-300',
+                open ? '-translate-y-[6.5px] -rotate-45' : '',
+              ].join(' ')} />
+            </button>
+
+          </div>
         </div>
       </header>
 
@@ -152,11 +182,30 @@ export default function Header() {
           })}
         </nav>
 
-        {/* Нижний блок */}
+        {/* Нижний блок — кнопка корзины */}
         <div className="border-t border-stone-100 p-6">
-          <p className="text-center text-xs text-stone-400">
-            © 2025 СТЕПАН. Все права защищены.
-          </p>
+          <button
+            onClick={() => { setOpen(false); openCart(true) }}
+            className="w-full flex items-center justify-between px-5 py-3.5 bg-stone-900 text-white
+                       hover:bg-stone-800 transition-colors rounded text-sm font-medium"
+          >
+            <span>Корзина заказа</span>
+            <span className="flex items-center gap-2">
+              {totalItems > 0 && (
+                <span className="bg-primary-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
+                  {totalItems}
+                </span>
+              )}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"
+                className="w-4 h-4" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0
+                     00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114
+                     60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 110-1.5.75.75
+                     0 010 1.5zm10.5 0a.75.75 0 110-1.5.75.75 0 010 1.5z" />
+              </svg>
+            </span>
+          </button>
         </div>
 
       </aside>

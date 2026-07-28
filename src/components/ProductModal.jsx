@@ -13,12 +13,14 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
+import { useCartContext } from '../context/CartContext'
 import { getProductDiscounts, calculateDiscountPrice } from '../utils/discountCalculator'
 
 const fmt  = n  => Number(n).toLocaleString('ru-RU')
 const fmtR = n  => `${fmt(Math.round(n))} ₽`
 
 export default function ProductModal({ product, onClose }) {
+  const { addToCart } = useCartContext()
 
   // ── ВСЕ ХУКИ ВЫШЕ УСЛОВНОГО RETURN ────────────────────────────────────────
   const [quantity, setQuantity] = useState(1)
@@ -341,11 +343,26 @@ export default function ProductModal({ product, onClose }) {
                 </div>
               )}
 
-              {/* Кнопка закрытия */}
-              <div className="mt-auto pt-2">
-                <button onClick={onClose}
-                  className="w-full btn-outline justify-center text-sm py-3">
-                  Закрыть
+              {/* Кнопки действий */}
+              <div className="mt-auto pt-4 flex flex-col gap-2.5">
+                <button
+                  onClick={() => {
+                    addToCart(product, quantity)
+                    onClose()
+                  }}
+                  disabled={!inStock}
+                  className="w-full btn-primary justify-center py-3.5 text-base font-medium shadow-md disabled:opacity-50"
+                >
+                  {inStock
+                    ? `Добавить в корзину (${quantity} шт.) — ${fmtR(calc.totalPrice)}`
+                    : 'Нет в наличии'}
+                </button>
+
+                <button
+                  onClick={onClose}
+                  className="w-full btn-outline justify-center text-xs py-2 text-stone-500"
+                >
+                  Продолжить покупки
                 </button>
               </div>
 
