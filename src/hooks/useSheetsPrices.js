@@ -1,45 +1,11 @@
 /**
- * useSheetsPrices — универсальный и гибкий парсер данных из Google Таблицы.
+ * useSheetsPrices — загружает данные из сервера через /api/sheets
  *
- * Автоматически распознаёт колонки независимо от регистра и языка:
- *   - id / #id / Идентификатор
- *   - name / Name / Название / Наименование
- *   - price / Price / Цена / Стоимость
- *   - oldPrice / старая_цена / Старая цена
- *   - description / Описание
- *   - badge / Бейдж / Метка
- *   - category / Категория / Раздел
- *   - image / Фото / Изображение
- *   - inStock / В наличии / Наличие
- *   - featured / На главной
- *   - wildberriesLink / wildberries / Ссылка WB
- *   - mainInfo / Основная информация
- *   - generalSpecs / Общие характеристики
- *   - materials / Материалы
- *   - additionalInfo / Дополнительная информация
- *   - dimensions / Габариты / Размеры
+ * Использует надежный серверный API-прокси для стопроцентной
+ * подгрузки всех полей из Google Таблицы без ограничений CORS.
  */
 
 import { useState, useEffect } from 'react'
-import { SHEETS_PRICES_URL, PRICES_CACHE_TTL } from '../config/catalog'
-
-const CACHE_KEY = 'furniture_sheets_v6'
-
-function readCache() {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY)
-    if (!raw) return null
-    const { data, timestamp } = JSON.parse(raw)
-    if (Date.now() - timestamp < PRICES_CACHE_TTL) return data
-  } catch {}
-  return null
-}
-
-function writeCache(data) {
-  try {
-    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
-  } catch {}
-}
 
 /** Ищет значение по списку синонимов названий колонок (без учёта регистра и символов) */
 function getVal(item, aliases) {
@@ -71,7 +37,6 @@ function parseStr(val) {
 
 function parseNum(val) {
   if (val === '' || val === null || val === undefined) return null
-  // Заменяем запятую на точку в десятичных числах (например "1855,2" -> 1855.2)
   const cleaned = String(val).replace(',', '.').replace(/\s/g, '')
   const n = Number(cleaned)
   return isNaN(n) ? null : n
@@ -140,26 +105,12 @@ function buildProductsMap(sheetsArray) {
 
 export function useSheetsPrices() {
   const [productsMap, setProductsMap] = useState({})
-  const [loading,     setLoading]     = useState(!!SHEETS_PRICES_URL)
+  const [loading,     setLoading]     = useState(true)
 
   useEffect(() => {
-    if (!SHEETS_PRICES_URL) {
-      setLoading(false)
-      return
-    }
-
-    const cached = readCache()
-    if (cached) {
-      setProductsMap(cached)
-      setLoading(false)
-      return
-    }
-
     let cancelled = false
 
-    const freshUrl = `${SHEETS_PRICES_URL}${SHEETS_PRICES_URL.includes('?') ? '&' : '?'}_t=${Date.now()}`
-
-    fetch(freshUrl, { cache: 'no-store' })
+    fetch('/api/sheets')
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
@@ -167,13 +118,12 @@ export function useSheetsPrices() {
       .then(json => {
         if (cancelled) return
         const map = buildProductsMap(json.products ?? json.data ?? json.items ?? [])
-        writeCache(map)
         setProductsMap(map)
         setLoading(false)
       })
       .catch(err => {
         if (cancelled) return
-        console.warn('[useSheetsPrices] Не удалось загрузить данные из Google Таблицы:', err.message)
+        console.warn('[useSheetsPrices] Ошибка:', err.message)
         setLoading(false)
       })
 
