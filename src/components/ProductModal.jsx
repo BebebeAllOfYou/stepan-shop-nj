@@ -61,10 +61,10 @@ export default function ProductModal({ product, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label={name}
-        className="fixed inset-0 z-[70] flex items-center justify-center p-4 pointer-events-none"
+        className="fixed inset-0 z-[70] flex items-center justify-center p-6 pointer-events-none"
       >
         <div
-          className="relative bg-white w-full max-w-3xl max-h-[90vh] overflow-y-auto
+          className="relative bg-white w-full max-w-6xl h-[calc(100vh-48px)] overflow-y-auto
                      pointer-events-auto shadow-2xl
                      animate-[slideUp_0.25s_ease]"
           onClick={e => e.stopPropagation()}
@@ -78,10 +78,10 @@ export default function ProductModal({ product, onClose }) {
             aria-label="Закрыть предпросмотр"
           >×</button>
 
-          <div className="grid md:grid-cols-2 gap-0">
+          <div className="grid md:grid-cols-2 gap-0 h-full">
 
             {/* Левая колонка: Главное фото товара */}
-            <div className="relative bg-stone-100 aspect-[3/4] md:aspect-auto md:min-h-[480px] overflow-hidden">
+            <div className="relative bg-stone-100 aspect-[3/4] md:aspect-auto md:h-full overflow-hidden">
               {image ? (
                 <img
                   src={image}
