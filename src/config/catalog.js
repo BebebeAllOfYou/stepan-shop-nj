@@ -18,4 +18,4 @@ export const SHEETS_PRICES_URL = 'https://script.google.com/macros/s/AKfycbypZg3
  * По умолчанию — 5 минут.
  * Изменения в таблице станут видны посетителям через это время.
  */
-export const PRICES_CACHE_TTL = 5 * 60 * 1000
+export const PRICES_CACHE_TTL = 0

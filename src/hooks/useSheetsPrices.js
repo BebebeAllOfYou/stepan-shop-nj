@@ -23,7 +23,7 @@
 import { useState, useEffect } from 'react'
 import { SHEETS_PRICES_URL, PRICES_CACHE_TTL } from '../config/catalog'
 
-const CACHE_KEY = 'furniture_sheets_v5'
+const CACHE_KEY = 'furniture_sheets_v6'
 
 function readCache() {
   try {
@@ -157,7 +157,9 @@ export function useSheetsPrices() {
 
     let cancelled = false
 
-    fetch(SHEETS_PRICES_URL)
+    const freshUrl = `${SHEETS_PRICES_URL}${SHEETS_PRICES_URL.includes('?') ? '&' : '?'}_t=${Date.now()}`
+
+    fetch(freshUrl, { cache: 'no-store' })
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         return res.json()
