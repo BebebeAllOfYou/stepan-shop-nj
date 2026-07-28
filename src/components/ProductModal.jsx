@@ -4,19 +4,22 @@
  * Props:
  *   product  — объект товара (null = закрыто)
  *   onClose  — коллбек закрытия
+ *
+ * ВАЖНО: все хуки (useState, useEffect, useMemo, useCallback) должны
+ * вызываться ДО любых условных return — это правило React.
  */
 
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import Image from 'next/image'
-import { useCartContext } from '../context/CartContext'
 import { getProductDiscounts, calculateDiscountPrice } from '../utils/discountCalculator'
 
 const fmt = n => Number(n).toLocaleString('ru-RU')
 
 export default function ProductModal({ product, onClose }) {
-  const { addToCart } = useCartContext()
+
+  // ── ВСЕ ХУКИ — ДО ЛЮБЫХ УСЛОВНЫХ RETURN ────────────────────────────────────
 
   // Количество товара в калькуляторе
   const [quantity, setQuantity] = useState(1)
@@ -41,6 +44,10 @@ export default function ProductModal({ product, onClose }) {
     }
   }, [product, handleKey])
 
+  // Уровни скидок вычисляем до early-return (useMemo обязан быть здесь)
+  const tiers = useMemo(() => getProductDiscounts(product), [product])
+
+  // ── Условный return только ПОСЛЕ всех хуков ─────────────────────────────────
   if (!product) return null
 
   const {
@@ -55,37 +62,24 @@ export default function ProductModal({ product, onClose }) {
     inStock     = true,
   } = product
 
-  // Уровни скидок для этого товара (по умолчанию: 10, 50, 100 шт -> 10%, 20%, 30%)
-  const tiers = useMemo(() => getProductDiscounts(product), [product])
-
-  // Текущий расчёт цены, скидки и выгоды
+  // Расчёт цены и скидки для текущего количества
   const calc = calculateDiscountPrice(price, quantity, tiers)
-
-  function handleAddToCart() {
-    if (!inStock) return
-    addToCart(product, calc.qty)
-    onClose()
-  }
 
   function handleQuantityChange(val) {
     const parsed = parseInt(val, 10)
-    if (isNaN(parsed) || parsed < 1) {
-      setQuantity(1)
-    } else {
-      setQuantity(parsed)
-    }
+    setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed)
   }
 
   return (
     <>
-      {/* ── Основной оверлей предпросмотра товара ── */}
+      {/* ── Основной оверлей ── */}
       <div
         onClick={onClose}
         className="fixed inset-0 z-[70] bg-stone-950/60 backdrop-blur-sm
                    animate-[fadeIn_0.2s_ease]"
       />
 
-      {/* ── Модальное окно товара ── */}
+      {/* ── Модальное окно ── */}
       <div
         role="dialog"
         aria-modal="true"
@@ -98,7 +92,7 @@ export default function ProductModal({ product, onClose }) {
                      animate-[slideUp_0.25s_ease]"
           onClick={e => e.stopPropagation()}
         >
-          {/* Кнопка закрытия окна предпросмотра */}
+          {/* Кнопка закрытия */}
           <button
             onClick={onClose}
             className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center
@@ -109,7 +103,7 @@ export default function ProductModal({ product, onClose }) {
 
           <div className="grid md:grid-cols-2 gap-0 min-h-full">
 
-            {/* Левая колонка: Главное фото товара */}
+            {/* Левая колонка: Фото */}
             <div className="relative bg-stone-100 aspect-[4/3] md:aspect-auto md:h-full overflow-hidden min-h-[300px]">
               {image ? (
                 <Image
@@ -126,7 +120,6 @@ export default function ProductModal({ product, onClose }) {
                 </div>
               )}
 
-              {/* Бейдж */}
               {badge && (
                 <span className={[
                   'absolute top-4 left-4 text-white text-xs px-3 py-1.5 tracking-wide z-10 font-medium',
@@ -147,7 +140,7 @@ export default function ProductModal({ product, onClose }) {
               </div>
 
               {/* Базовая цена */}
-              <div className="flex items-baseline gap-3 pb-2 border-b border-stone-100">
+              <div className="flex items-baseline gap-3 pb-4 border-b border-stone-100">
                 <span className="text-2xl text-primary-600 font-medium">{fmt(price)} ₽</span>
                 <span className="text-xs text-stone-400">/ шт. (базовая)</span>
                 {oldPrice && (
@@ -163,12 +156,12 @@ export default function ProductModal({ product, onClose }) {
                 </div>
               )}
 
-              {/* ── 🧮 КАЛЬКУЛЯТОР ЦЕНЫ И СКИДОК ── */}
+              {/* ── 🧮 КАЛЬКУЛЯТОР СКИДКИ ── */}
               <div className="bg-stone-50 p-5 rounded-lg border border-stone-200/80 space-y-5">
+
+                {/* Заголовок */}
                 <div className="flex justify-between items-center">
-                  <h3 className="font-display text-base text-stone-900 flex items-center gap-2">
-                    <span>🧮 Калькулятор оптовой скидки</span>
-                  </h3>
+                  <h3 className="font-display text-base text-stone-900">🧮 Оптовые скидки</h3>
                   {calc.discountPercent > 0 && (
                     <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200">
                       Скидка {calc.discountPercent}%
@@ -176,19 +169,18 @@ export default function ProductModal({ product, onClose }) {
                   )}
                 </div>
 
-                {/* 3 Карточки уровней скидки */}
+                {/* 3 карточки уровней скидки */}
                 <div className="grid grid-cols-3 gap-2">
                   {tiers.map((t, idx) => {
-                    const isActive = calc.activeTier?.minQty === t.minQty
+                    const isActive  = calc.activeTier?.minQty === t.minQty
                     const isReached = quantity >= t.minQty
-
                     return (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => setQuantity(t.minQty)}
                         className={[
-                          'p-2.5 rounded-md text-center transition-all duration-200 border cursor-pointer flex flex-col items-center justify-center',
+                          'p-2.5 rounded-md text-center transition-all duration-200 border flex flex-col items-center justify-center',
                           isActive
                             ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm scale-[1.02]'
                             : isReached
@@ -205,18 +197,18 @@ export default function ProductModal({ product, onClose }) {
                   })}
                 </div>
 
-                {/* Управление количеством */}
+                {/* Ввод количества */}
                 <div>
                   <label className="block text-xs text-stone-500 uppercase tracking-wider mb-2">
-                    Укажите количество (шт.):
+                    Количество (шт.):
                   </label>
-                  <div className="flex items-center gap-3">
-                    {/* Селектор количество */}
+                  <div className="flex items-center gap-3 flex-wrap">
                     <div className="flex items-center border border-stone-300 bg-white rounded overflow-hidden shadow-sm">
                       <button
                         type="button"
                         onClick={() => handleQuantityChange(quantity - 1)}
-                        className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-lg flex items-center justify-center transition-colors"
+                        className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-lg
+                                   flex items-center justify-center transition-colors"
                       >−</button>
                       <input
                         type="number"
@@ -224,12 +216,14 @@ export default function ProductModal({ product, onClose }) {
                         max="9999"
                         value={quantity}
                         onChange={e => handleQuantityChange(e.target.value)}
-                        className="w-20 h-10 text-center font-bold text-stone-900 text-base focus:outline-none bg-transparent"
+                        className="w-20 h-10 text-center font-bold text-stone-900 text-base
+                                   focus:outline-none bg-transparent"
                       />
                       <button
                         type="button"
                         onClick={() => handleQuantityChange(quantity + 1)}
-                        className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-lg flex items-center justify-center transition-colors"
+                        className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700 font-bold text-lg
+                                   flex items-center justify-center transition-colors"
                       >+</button>
                     </div>
 
@@ -254,12 +248,12 @@ export default function ProductModal({ product, onClose }) {
                   </div>
                 </div>
 
-                {/* Подсказка прогресса до следующей скидки */}
+                {/* Подсказка прогресса */}
                 {calc.nextTier ? (
                   <div className="text-xs bg-amber-50 border border-amber-200 text-amber-900 p-2.5 rounded flex items-center gap-2">
                     <span>💡</span>
                     <span>
-                      Добавьте ещё <strong>{calc.itemsNeededForNextTier} шт.</strong>, чтобы получить скидку <strong>{calc.nextTier.discountPercent}%</strong>!
+                      Добавьте ещё <strong>{calc.itemsNeededForNextTier} шт.</strong>, чтобы получить скидку <strong>{calc.nextTier.discountPercent}%</strong>
                     </span>
                   </div>
                 ) : (
@@ -269,10 +263,10 @@ export default function ProductModal({ product, onClose }) {
                   </div>
                 )}
 
-                {/* Итоговый подсчет */}
-                <div className="pt-3 border-t border-stone-200 flex items-center justify-between">
+                {/* Итоговый расчёт */}
+                <div className="pt-3 border-t border-stone-200 flex items-end justify-between">
                   <div>
-                    <span className="text-xs text-stone-500 block">Цена за 1 шт:</span>
+                    <span className="text-xs text-stone-500 block">Цена за 1 шт.:</span>
                     <span className="text-base font-semibold text-stone-900">
                       {fmt(calc.unitPrice)} ₽
                       {calc.discountPercent > 0 && (
@@ -282,9 +276,8 @@ export default function ProductModal({ product, onClose }) {
                       )}
                     </span>
                   </div>
-
                   <div className="text-right">
-                    <span className="text-xs text-stone-500 block">Итого со скидкой:</span>
+                    <span className="text-xs text-stone-500 block">Итого {calc.qty} шт.:</span>
                     {calc.totalSavings > 0 && (
                       <span className="text-xs text-emerald-600 font-semibold block">
                         Выгода: -{fmt(calc.totalSavings)} ₽
@@ -303,10 +296,7 @@ export default function ProductModal({ product, onClose }) {
                   <p className="text-xs text-stone-400 uppercase tracking-wider mb-2">Материалы</p>
                   <div className="flex flex-wrap gap-2">
                     {materials.map(m => (
-                      <span
-                        key={m}
-                        className="text-xs border border-stone-200 text-stone-600 px-3 py-1 rounded"
-                      >
+                      <span key={m} className="text-xs border border-stone-200 text-stone-600 px-3 py-1 rounded">
                         {m}
                       </span>
                     ))}
@@ -314,23 +304,13 @@ export default function ProductModal({ product, onClose }) {
                 </div>
               )}
 
-              {/* Кнопка добавления в корзину */}
-              <div className="mt-auto pt-4 flex flex-col gap-3">
-                <button
-                  onClick={handleAddToCart}
-                  disabled={!inStock}
-                  className="w-full btn-primary justify-center py-3.5 text-base font-medium shadow-md disabled:opacity-50"
-                >
-                  {inStock
-                    ? `Добавить в корзину (${calc.qty} шт.) — ${fmt(calc.totalPrice)} ₽`
-                    : 'Нет в наличии'}
-                </button>
-
+              {/* Кнопка закрытия */}
+              <div className="mt-auto pt-2">
                 <button
                   onClick={onClose}
-                  className="w-full btn-outline justify-center text-xs py-2 text-stone-500"
+                  className="w-full btn-outline justify-center text-sm py-3"
                 >
-                  Продолжить покупки
+                  Закрыть
                 </button>
               </div>
 
