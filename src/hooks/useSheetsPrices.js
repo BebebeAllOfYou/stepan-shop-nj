@@ -27,7 +27,7 @@ function readCache() {
 
 function writeCache(data) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
   } catch {}
 }
 
@@ -100,7 +100,7 @@ function buildProductsMap(sheetsArray) {
       image:            parseStr(item.image),
       inStock:          parseBool(item.inStock),
       featured:         parseBool(item.featured),
-      wildberriesLink:  parseStr(item.wildberriesLink),
+      wildberriesLink:  parseStr(item.wildberriesLink ?? item.wildberries),
       mainInfo:         parseObjOrJson(item.mainInfo),
       generalSpecs:     parseObjOrJson(item.generalSpecs),
       materials:        parseArray(item.materials),
