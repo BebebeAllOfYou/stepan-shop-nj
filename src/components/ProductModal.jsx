@@ -1,12 +1,13 @@
 /**
  * ProductModal — модальный предпросмотр товара
  *
- * Содержит:
- *   • Фото товара
- *   • Название, категория, цена
- *   • Выбор количества (шт.)
- *   • Описание и материалы
- *   • Кнопка «Добавить в корзину»
+ * Содержит 6 полных разделов информации:
+ *   1. Описание
+ *   2. Основная информация (Артикул, Бренд, Страна, Тип монтажа и т.д.)
+ *   3. Общие характеристики
+ *   4. Материалы
+ *   5. Габариты (Ш × В × Г, Вес)
+ *   6. Дополнительная информация
  */
 
 'use client'
@@ -46,15 +47,19 @@ export default function ProductModal({ product, onClose }) {
   if (!product) return null
 
   const {
-    name        = 'Товар',
-    category    = '',
-    price       = 0,
-    oldPrice    = null,
-    image       = null,
-    badge       = null,
-    description = '',
-    materials   = [],
-    inStock     = true,
+    name           = 'Товар',
+    category       = '',
+    price          = 0,
+    oldPrice       = null,
+    image          = null,
+    badge          = null,
+    description    = '',
+    mainInfo       = null,
+    generalSpecs   = null,
+    materials      = [],
+    additionalInfo = '',
+    dimensions     = null,
+    inStock        = true,
   } = product
 
   const itemTotal = price * quantity
@@ -63,6 +68,18 @@ export default function ProductModal({ product, onClose }) {
     const parsed = parseInt(val, 10)
     setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed)
   }
+
+  // Форматирование габаритов
+  const formattedDimensions = (() => {
+    if (!dimensions) return null
+    if (typeof dimensions === 'string') return dimensions
+    const parts = []
+    if (dimensions.width)  parts.push(`Ширина: ${dimensions.width} см`)
+    if (dimensions.height) parts.push(`Высота: ${dimensions.height} см`)
+    if (dimensions.depth)  parts.push(`Глубина/Толщина: ${dimensions.depth} см`)
+    if (dimensions.weight) parts.push(`Вес: ${dimensions.weight}`)
+    return parts.length > 0 ? parts : null
+  })()
 
   return (
     <>
@@ -77,11 +94,11 @@ export default function ProductModal({ product, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-label={name}
-        className="fixed inset-0 z-[70] flex items-center justify-center p-4 md:p-6 pointer-events-none"
+        className="fixed inset-0 z-[70] flex items-center justify-center p-3 md:p-6 pointer-events-none"
       >
         <div
-          className="relative bg-white w-full max-w-5xl max-h-[92vh] overflow-y-auto
-                     pointer-events-auto shadow-2xl rounded-sm animate-[slideUp_0.25s_ease]"
+          className="relative bg-white w-full max-w-5xl h-[calc(100vh-24px)] md:h-[calc(100vh-48px)] overflow-y-auto
+                     pointer-events-auto shadow-2xl rounded-lg animate-[slideUp_0.25s_ease]"
           onClick={e => e.stopPropagation()}
         >
           {/* Кнопка закрытия */}
@@ -107,77 +124,67 @@ export default function ProductModal({ product, onClose }) {
               )}
               {badge && (
                 <span className={[
-                  'absolute top-4 left-4 text-white text-xs px-3 py-1.5 tracking-wide z-10 font-medium',
+                  'absolute top-4 left-4 text-white text-xs px-3 py-1.5 tracking-wide z-10 font-medium rounded',
                   badge === 'Скидка' ? 'bg-red-500' : 'bg-primary-600',
                 ].join(' ')}>{badge}</span>
               )}
             </div>
 
-            {/* ── Правая колонка: Инфо + Выбор количества ── */}
+            {/* ── Правая колонка: Все 6 пунктов информации ── */}
             <div className="flex flex-col p-6 md:p-8 gap-6 overflow-y-auto">
 
-              {/* Название */}
+              {/* Название и Категория */}
               <div>
-                <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">{category}</p>
+                <p className="text-xs text-stone-400 uppercase tracking-wider mb-1 font-medium">{category}</p>
                 <h2 className="font-display text-2xl md:text-3xl text-stone-900 leading-snug">{name}</h2>
               </div>
 
               {/* Базовая цена */}
               <div className="flex items-baseline gap-3 pb-4 border-b border-stone-100">
-                <span className="text-2xl text-primary-600 font-medium">{fmtR(price)}</span>
+                <span className="text-2xl md:text-3xl text-primary-600 font-bold font-display">{fmtR(price)}</span>
                 <span className="text-xs text-stone-400">/ шт.</span>
                 {oldPrice && (
                   <span className="text-stone-400 line-through text-sm">{fmtR(oldPrice)}</span>
                 )}
               </div>
 
-              {/* Описание */}
-              {description && (
-                <div>
-                  <p className="text-xs text-stone-400 uppercase tracking-wider mb-1">Описание</p>
-                  <p className="text-sm text-stone-600 leading-relaxed">{description}</p>
-                </div>
-              )}
-
-              {/* Выбор количества */}
-              <div className="space-y-2">
-                <label className="block text-xs text-stone-500 uppercase tracking-wider">
+              {/* Выбор количества и кнопка в корзину */}
+              <div className="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-3">
+                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
                   Количество (шт.):
                 </label>
                 <div className="flex items-center gap-3 flex-wrap">
-                  {/* Счётчик */}
                   <div className="flex items-center border border-stone-300 rounded-lg bg-white overflow-hidden shadow-sm">
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(quantity - 1)}
-                      className="w-10 h-11 bg-stone-100 hover:bg-stone-200 text-stone-700
-                                 font-bold text-xl flex items-center justify-center transition-colors"
+                      className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700
+                                 font-bold text-lg flex items-center justify-center transition-colors"
                     >−</button>
                     <input
                       type="number"
                       min="1" max="99999"
                       value={quantity}
                       onChange={e => handleQuantityChange(e.target.value)}
-                      className="w-20 h-11 text-center font-bold text-stone-900 text-base
+                      className="w-20 h-10 text-center font-bold text-stone-900 text-base
                                  focus:outline-none bg-transparent tabular-nums"
                     />
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(quantity + 1)}
-                      className="w-10 h-11 bg-stone-100 hover:bg-stone-200 text-stone-700
+                      className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700
                                  font-bold text-xl flex items-center justify-center transition-colors"
                     >+</button>
                   </div>
 
-                  {/* Быстрые кнопки */}
                   <div className="flex gap-1.5 flex-wrap">
-                    {[1, 5, 10, 20, 50].map(preset => (
+                    {[1, 4, 10, 20].map(preset => (
                       <button
                         key={preset}
                         type="button"
                         onClick={() => setQuantity(preset)}
                         className={[
-                          'px-3 py-2 text-xs font-medium rounded-md transition-colors border',
+                          'px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border',
                           quantity === preset
                             ? 'bg-stone-900 text-white border-stone-900'
                             : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100',
@@ -188,15 +195,98 @@ export default function ProductModal({ product, onClose }) {
                     ))}
                   </div>
                 </div>
+
+                <button
+                  onClick={() => {
+                    addToCart(product, quantity)
+                    onClose()
+                  }}
+                  disabled={!inStock}
+                  className="w-full btn-primary justify-center py-3 text-sm md:text-base font-semibold shadow-md disabled:opacity-50 mt-2"
+                >
+                  {inStock
+                    ? `Добавить в корзину (${quantity} шт.) — ${fmtR(itemTotal)}`
+                    : 'Нет в наличии'}
+                </button>
               </div>
 
-              {/* Материалы */}
+              {/* ──────────────── 1. ОПИСАНИЕ ──────────────── */}
+              {description && (
+                <div className="space-y-1.5">
+                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span>📝 Описание</span>
+                  </h3>
+                  <p className="text-sm text-stone-600 leading-relaxed bg-white p-3 rounded border border-stone-100">
+                    {description}
+                  </p>
+                </div>
+              )}
+
+              {/* ──────────────── 2. ОСНОВНАЯ ИНФОРМАЦИЯ ──────────────── */}
+              {mainInfo && (
+                <div className="space-y-2">
+                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span>📌 Основная информация</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {Object.entries(mainInfo).map(([key, val]) => (
+                      <div key={key} className="bg-stone-50 p-2.5 rounded border border-stone-200/60 flex justify-between">
+                        <span className="text-stone-500">{key}:</span>
+                        <span className="font-semibold text-stone-800 text-right ml-2">{String(val)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ──────────────── 3. ОБЩИЕ ХАРАКТЕРИСТИКИ ──────────────── */}
+              {generalSpecs && (
+                <div className="space-y-2">
+                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span>⚙️ Общие характеристики</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {Object.entries(generalSpecs).map(([key, val]) => (
+                      <div key={key} className="bg-stone-50 p-2.5 rounded border border-stone-200/60 flex justify-between">
+                        <span className="text-stone-500">{key}:</span>
+                        <span className="font-semibold text-stone-800 text-right ml-2">{String(val)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* ──────────────── 4. ГАБАРИТЫ ──────────────── */}
+              {formattedDimensions && (
+                <div className="space-y-2">
+                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span>📐 Габариты</span>
+                  </h3>
+                  <div className="flex flex-wrap gap-2 text-xs">
+                    {Array.isArray(formattedDimensions) ? (
+                      formattedDimensions.map((item, idx) => (
+                        <span key={idx} className="bg-stone-100 text-stone-800 font-medium px-3 py-1.5 rounded border border-stone-200">
+                          {item}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="bg-stone-100 text-stone-800 font-medium px-3 py-1.5 rounded border border-stone-200">
+                        {formattedDimensions}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* ──────────────── 5. МАТЕРИАЛЫ ──────────────── */}
               {materials?.length > 0 && (
-                <div>
-                  <p className="text-xs text-stone-400 uppercase tracking-wider mb-2">Материалы</p>
+                <div className="space-y-2">
+                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span>🪵 Материалы</span>
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {materials.map(m => (
-                      <span key={m} className="text-xs border border-stone-200 text-stone-600 px-3 py-1 rounded">
+                      <span key={m} className="text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded border border-emerald-200">
                         {m}
                       </span>
                     ))}
@@ -204,26 +294,25 @@ export default function ProductModal({ product, onClose }) {
                 </div>
               )}
 
-              {/* Кнопки действий */}
-              <div className="mt-auto pt-4 flex flex-col gap-2.5">
-                <button
-                  onClick={() => {
-                    addToCart(product, quantity)
-                    onClose()
-                  }}
-                  disabled={!inStock}
-                  className="w-full btn-primary justify-center py-3.5 text-base font-medium shadow-md disabled:opacity-50"
-                >
-                  {inStock
-                    ? `Добавить в корзину (${quantity} шт.) — ${fmtR(itemTotal)}`
-                    : 'Нет в наличии'}
-                </button>
+              {/* ──────────────── 6. ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ ──────────────── */}
+              {additionalInfo && (
+                <div className="space-y-1.5">
+                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
+                    <span>ℹ️ Дополнительная информация</span>
+                  </h3>
+                  <div className="text-xs bg-amber-50 text-amber-900 p-3 rounded-lg border border-amber-200 leading-relaxed">
+                    {additionalInfo}
+                  </div>
+                </div>
+              )}
 
+              {/* Кнопка закрытия */}
+              <div className="pt-2">
                 <button
                   onClick={onClose}
-                  className="w-full btn-outline justify-center text-xs py-2 text-stone-500"
+                  className="w-full btn-outline justify-center text-xs py-2.5 text-stone-500"
                 >
-                  Продолжить покупки
+                  Закрыть
                 </button>
               </div>
 

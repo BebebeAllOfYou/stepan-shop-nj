@@ -1,17 +1,7 @@
 /**
  * useProducts — загрузка товаров и категорий + фильтрация + сортировка
  *
- * Цены подгружаются из Google Таблицы через useSheetsPrices().
- * Если URL не задан или Google API недоступен — используются цены из products.json.
- *
- * Использование:
- *   const {
- *     products, categories,
- *     loading, error,
- *     activeCategory, setActiveCategory,
- *     sort, setSort,
- *     visibleCount, showMore, hasMore,
- *   } = useProducts()
+ * Мёржит локальные данные из products.json с динамическими из Google Таблицы.
  */
 
 import { useState, useMemo } from 'react'
@@ -28,23 +18,19 @@ export function useProducts() {
   const { data: productsData, loading: loadingP, error: errorP } = useFetch('/data/products.json')
   const { data: categoriesData                                  } = useFetch('/data/categories.json')
 
-  // Данные из Google Таблицы (при пустом URL — не запрашиваются)
+  // Данные из Google Таблицы
   const { productsMap, loading: loadingPrices } = useSheetsPrices()
 
-  // Применяем данные из Google Sheets поверх локальных.
-  // Правило: если поле в таблице пустое (null) — остаётся значение из products.json.
-  // Товары без названия скрываются из каталога полностью.
   const allProducts = useMemo(() => {
     const base = productsData?.products ?? []
     const merged = !Object.keys(productsMap).length
       ? base
       : base.map(p => {
-          const s = productsMap[p.id]   // s = данные из Sheets для этого товара
+          const s = productsMap[p.id]
           if (!s) return p
 
           return {
             ...p,
-            // Каждое поле берётся из Sheets только если оно не null
             ...(s.name            !== null ? { name:            s.name            } : {}),
             ...(s.price           !== null ? { price:           s.price           } : {}),
             ...(s.oldPrice        !== null ? { oldPrice:        s.oldPrice        } : {}),
@@ -55,15 +41,16 @@ export function useProducts() {
             ...(s.inStock         !== null ? { inStock:         s.inStock         } : {}),
             ...(s.featured        !== null ? { featured:        s.featured        } : {}),
             ...(s.wildberriesLink !== null ? { wildberriesLink: s.wildberriesLink } : {}),
+            ...(s.mainInfo        !== null ? { mainInfo:        s.mainInfo        } : {}),
+            ...(s.generalSpecs    !== null ? { generalSpecs:    s.generalSpecs    } : {}),
+            ...(s.materials       !== null ? { materials:       s.materials       } : {}),
+            ...(s.additionalInfo  !== null ? { additionalInfo:  s.additionalInfo  } : {}),
+            ...(s.dimensions      !== null ? { dimensions:      s.dimensions      } : {}),
           }
         })
-    // Скрываем позиции без названия (пустая строка или null/undefined)
     return merged.filter(p => p.name?.trim())
   }, [productsData, productsMap])
 
-  // Пересчитываем счётчики категорий динамически из реального списка товаров.
-  // Это исправляет расхождение между захардкоженным count в categories.json
-  // и фактическим количеством товаров в каталоге.
   const categories = useMemo(() => {
     const base = categoriesData?.categories ?? []
     return base.map(cat => ({
@@ -74,27 +61,23 @@ export function useProducts() {
     }))
   }, [categoriesData, allProducts])
 
-  // 1. Фильтрация по категории
   const filtered = useMemo(() => {
     if (activeCategory === 'all') return allProducts
     return allProducts.filter(p => p.category === activeCategory)
   }, [allProducts, activeCategory])
 
-  // 2. Сортировка
   const sorted = useMemo(() => {
     const arr = [...filtered]
     if (sort === 'price-asc')  return arr.sort((a, b) => a.price - b.price)
     if (sort === 'price-desc') return arr.sort((a, b) => b.price - a.price)
     if (sort === 'new')        return arr.sort((a, b) => (b.badge === 'Новинка') - (a.badge === 'Новинка'))
-    return arr // 'default' — порядок из JSON
+    return arr
   }, [filtered, sort])
 
-  // 3. Пагинация («Показать ещё»)
   const products = useMemo(() => sorted.slice(0, visibleCount), [sorted, visibleCount])
   const hasMore  = visibleCount < sorted.length
   const showMore = () => setVisibleCount(n => n + PAGE_SIZE)
 
-  // Сбрасываем страницу при смене фильтра/сортировки
   const handleSetCategory = (cat) => { setActiveCategory(cat); setVisibleCount(PAGE_SIZE) }
   const handleSetSort     = (s)   => { setSort(s);             setVisibleCount(PAGE_SIZE) }
 
