@@ -12,7 +12,10 @@
  *   • Кнопка «Закрыть»
  */
 
+'use client'
+
 import { useEffect, useCallback } from 'react'
+import Image from 'next/image'
 
 const fmt = n => Number(n).toLocaleString('ru-RU')
 
@@ -83,10 +86,13 @@ export default function ProductModal({ product, onClose }) {
             {/* Левая колонка: Главное фото товара */}
             <div className="relative bg-stone-100 aspect-[3/4] md:aspect-auto md:h-full overflow-hidden">
               {image ? (
-                <img
+                <Image
                   src={image}
                   alt={name}
-                  className="absolute inset-0 w-full h-full object-cover"
+                  fill
+                  priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
                 />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-stone-300 text-sm">

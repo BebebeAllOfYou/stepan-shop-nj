@@ -14,6 +14,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import Image from 'next/image'
 
 export default function ProductCard({ product = {}, onCardClick }) {
   const {
@@ -88,14 +89,15 @@ export default function ProductCard({ product = {}, onCardClick }) {
       {/* Все кандидаты наложены друг на друга; видна только активная */}
       {validImages.length > 0 ? (
         validImages.map((src, idx) => (
-          <img
+          <Image
             key={src}
             src={src}
             alt={`${name} — фото ${idx + 1}`}
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
             onError={() => handleImageError(src)}
             className={[
-              'absolute inset-0 w-full h-full object-cover',
-              'transition-opacity duration-300',
+              'object-cover transition-opacity duration-300',
               idx === safeIndex ? 'opacity-100' : 'opacity-0 pointer-events-none',
             ].join(' ')}
           />

@@ -7,6 +7,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import Image          from 'next/image'
 import { useGallery } from '../hooks/useGallery'
 import { useFetch }   from '../hooks/useFetch'
 import ProductModal   from './ProductModal'
@@ -20,11 +21,12 @@ function GalleryCard({ item, onClick }) {
       className="group relative bg-stone-100 aspect-[4/3] rounded-lg overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all duration-300"
     >
       {/* Изображение интерьера */}
-      <img
+      <Image
         src={item.image}
         alt={item.title}
-        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        loading="lazy"
+        fill
+        sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+        className="object-cover transition-transform duration-500 group-hover:scale-105"
       />
 
       {/* Оверлей с подробностями и подписью */}
@@ -222,11 +224,15 @@ export default function InteriorGallery() {
             )}
 
             {/* Главное полноэкранное фото */}
-            <img
-              src={currentItem.image}
-              alt={currentItem.title}
-              className="max-h-[78vh] max-w-full object-contain shadow-2xl rounded-sm transition-all duration-300 select-none"
-            />
+            <div className="relative w-full h-[78vh] flex items-center justify-center">
+              <Image
+                src={currentItem.image}
+                alt={currentItem.title}
+                fill
+                sizes="100vw"
+                className="object-contain shadow-2xl rounded-sm transition-all duration-300 select-none"
+              />
+            </div>
 
             {/* Стрелка ВПРАВО */}
             {items.length > 1 && (

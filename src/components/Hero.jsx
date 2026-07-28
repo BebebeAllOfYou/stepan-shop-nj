@@ -6,6 +6,7 @@
 'use client'
 
 import Link           from 'next/link'
+import Image          from 'next/image'
 import { useCompany } from '../hooks/useCompany'
 
 export default function Hero() {
@@ -61,11 +62,13 @@ export default function Hero() {
 
         {/* Изображение */}
         <div className="relative aspect-[4/5] bg-stone-200 rounded-2xl overflow-hidden shadow-2xl group border border-stone-200/60">
-          <img
+          <Image
             src="/images/home/hero.jpg"
             alt="Стеновые панели Forma в интерьере"
-            className="w-full h-full object-cover object-center transform transition-transform duration-700 group-hover:scale-105"
-            loading="eager"
+            fill
+            priority
+            sizes="(max-width: 768px) 100vw, 50vw"
+            className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900/20 via-transparent to-transparent pointer-events-none" />
         </div>
