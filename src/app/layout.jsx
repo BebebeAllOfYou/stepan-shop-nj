@@ -1,8 +1,7 @@
 /**
  * layout.jsx — корневой layout приложения (Next.js App Router)
  *
- * Заменяет прежние index.html + main.jsx + App.jsx:
- * оборачивает все страницы в CartProvider, Header и Footer.
+ * Оборачивает все страницы в CartProvider, Header, Footer и CartPanel.
  * Содержит микроразметку schema.org: Organization + WebSite.
  */
 
@@ -10,6 +9,7 @@ import '../index.css'
 import { CartProvider } from '../context/CartContext'
 import Header           from '../components/Header'
 import Footer           from '../components/Footer'
+import CartPanel        from '../components/CartPanel'
 import JsonLd           from '../components/JsonLd'
 import { SITE_URL, SITE_NAME } from '../config/site'
 import company from '../../public/data/company.json'
@@ -64,6 +64,7 @@ export default function RootLayout({ children }) {
           <Header />
           {children}
           <Footer />
+          <CartPanel />
         </CartProvider>
       </body>
     </html>
