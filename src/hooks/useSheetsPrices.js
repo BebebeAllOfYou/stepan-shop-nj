@@ -1,19 +1,29 @@
 /**
- * useSheetsPrices — загружает данные товаров из Google Таблицы через Apps Script.
+ * useSheetsPrices — универсальный и гибкий парсер данных из Google Таблицы.
  *
- * Поддерживает новые поля:
- *   - mainInfo (Основная информация)
- *   - generalSpecs (Общие характеристики)
- *   - materials (Материалы)
- *   - additionalInfo (Дополнительная информация)
- *   - dimensions (Габариты)
- *   - description (Описание)
+ * Автоматически распознаёт колонки независимо от регистра и языка:
+ *   - id / #id / Идентификатор
+ *   - name / Name / Название / Наименование
+ *   - price / Price / Цена / Стоимость
+ *   - oldPrice / старая_цена / Старая цена
+ *   - description / Описание
+ *   - badge / Бейдж / Метка
+ *   - category / Категория / Раздел
+ *   - image / Фото / Изображение
+ *   - inStock / В наличии / Наличие
+ *   - featured / На главной
+ *   - wildberriesLink / wildberries / Ссылка WB
+ *   - mainInfo / Основная информация
+ *   - generalSpecs / Общие характеристики
+ *   - materials / Материалы
+ *   - additionalInfo / Дополнительная информация
+ *   - dimensions / Габариты / Размеры
  */
 
 import { useState, useEffect } from 'react'
 import { SHEETS_PRICES_URL, PRICES_CACHE_TTL } from '../config/catalog'
 
-const CACHE_KEY = 'furniture_sheets_v4'
+const CACHE_KEY = 'furniture_sheets_v5'
 
 function readCache() {
   try {
@@ -29,6 +39,20 @@ function writeCache(data) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }))
   } catch {}
+}
+
+/** Ищет значение по списку синонимов названий колонок (без учёта регистра и символов) */
+function getVal(item, aliases) {
+  if (!item || typeof item !== 'object') return undefined
+  const itemKeys = Object.keys(item)
+  for (const alias of aliases) {
+    const cleanAlias = String(alias).toLowerCase().replace(/[^a-z0-9а-яё]/gi, '')
+    const matchKey = itemKeys.find(k => String(k).toLowerCase().replace(/[^a-z0-9а-яё]/gi, '') === cleanAlias)
+    if (matchKey !== undefined && item[matchKey] !== undefined && item[matchKey] !== null && item[matchKey] !== '') {
+      return item[matchKey]
+    }
+  }
+  return undefined
 }
 
 function parseBool(val) {
@@ -47,7 +71,9 @@ function parseStr(val) {
 
 function parseNum(val) {
   if (val === '' || val === null || val === undefined) return null
-  const n = Number(val)
+  // Заменяем запятую на точку в десятичных числах (например "1855,2" -> 1855.2)
+  const cleaned = String(val).replace(',', '.').replace(/\s/g, '')
+  const n = Number(cleaned)
   return isNaN(n) ? null : n
 }
 
@@ -57,7 +83,6 @@ function parseObjOrJson(val) {
   try {
     return JSON.parse(val)
   } catch {
-    // Если передана строка вида "Ключ:Значение\nКлюч2:Значение2"
     const result = {}
     const lines = String(val).split('\n')
     for (const line of lines) {
@@ -88,24 +113,26 @@ function parseArray(val) {
 function buildProductsMap(sheetsArray) {
   const map = {}
   for (const item of sheetsArray) {
-    const id = Number(item.id)
+    const rawId = getVal(item, ['id', '#id', '# id', 'ID', 'идентификатор'])
+    const id    = parseNum(rawId)
     if (!id) continue
+
     map[id] = {
-      name:             parseStr(item.name),
-      price:            parseNum(item.price),
-      oldPrice:         parseNum(item.oldPrice),
-      description:      parseStr(item.description),
-      badge:            parseStr(item.badge),
-      category:         parseStr(item.category),
-      image:            parseStr(item.image),
-      inStock:          parseBool(item.inStock),
-      featured:         parseBool(item.featured),
-      wildberriesLink:  parseStr(item.wildberriesLink ?? item.wildberries),
-      mainInfo:         parseObjOrJson(item.mainInfo),
-      generalSpecs:     parseObjOrJson(item.generalSpecs),
-      materials:        parseArray(item.materials),
-      additionalInfo:   parseStr(item.additionalInfo),
-      dimensions:       parseObjOrJson(item.dimensions),
+      name:            parseStr(getVal(item, ['name', 'название', 'наименование', 'товар'])),
+      price:           parseNum(getVal(item, ['price', 'цена', 'стоимость'])),
+      oldPrice:        parseNum(getVal(item, ['oldPrice', 'old_price', 'старая цена', 'старая_цена'])),
+      description:     parseStr(getVal(item, ['description', 'описание'])),
+      badge:           parseStr(getVal(item, ['badge', 'бейдж', 'метка'])),
+      category:        parseStr(getVal(item, ['category', 'категория', 'раздел'])),
+      image:           parseStr(getVal(item, ['image', 'фото', 'картинка', 'изображение'])),
+      inStock:         parseBool(getVal(item, ['inStock', 'in_stock', 'в наличии', 'наличие'])),
+      featured:        parseBool(getVal(item, ['featured', 'на главной', 'рекомендуемый'])),
+      wildberriesLink: parseStr(getVal(item, ['wildberriesLink', 'wildberries', 'wb', 'вайлдберриз'])),
+      mainInfo:        parseObjOrJson(getVal(item, ['mainInfo', 'main_info', 'основная информация'])),
+      generalSpecs:    parseObjOrJson(getVal(item, ['generalSpecs', 'general_specs', 'общие характеристики', 'характеристики'])),
+      materials:       parseArray(getVal(item, ['materials', 'материалы', 'материал'])),
+      additionalInfo:  parseStr(getVal(item, ['additionalInfo', 'additional_info', 'дополнительная информация', 'доп информация'])),
+      dimensions:      parseObjOrJson(getVal(item, ['dimensions', 'габариты', 'размеры'])),
     }
   }
   return map
@@ -137,7 +164,7 @@ export function useSheetsPrices() {
       })
       .then(json => {
         if (cancelled) return
-        const map = buildProductsMap(json.products ?? json.data ?? [])
+        const map = buildProductsMap(json.products ?? json.data ?? json.items ?? [])
         writeCache(map)
         setProductsMap(map)
         setLoading(false)
