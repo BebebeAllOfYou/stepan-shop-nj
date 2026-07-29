@@ -1,13 +1,14 @@
 /**
- * ProductModal — модальный предпросмотр товара
+ * ProductModal — предпросмотр товара, оптовый минималистичный стиль
  *
- * Содержит 6 полных разделов информации:
- *   1. Описание
- *   2. Основная информация (Артикул, Бренд, Страна, Тип монтажа и т.д.)
- *   3. Общие характеристики
- *   4. Материалы
- *   5. Габариты (Ш × В × Г, Вес)
+ * Порядок блоков (технические данные — первые, описание — в конце):
+ *   1. Фото + цена + количество + кнопка корзины
+ *   2. Габариты
+ *   3. Основная информация
+ *   4. Общие характеристики
+ *   5. Материалы
  *   6. Дополнительная информация
+ *   7. Описание (последнее)
  */
 
 'use client'
@@ -19,16 +20,39 @@ import { useCartContext } from '../context/CartContext'
 const fmt  = n => Number(n).toLocaleString('ru-RU')
 const fmtR = n => `${fmt(Math.round(n))} ₽`
 
+/** Одна строка характеристики с пунктирной линией */
+function SpecRow({ label, value }) {
+  if (!value && value !== 0) return null
+  return (
+    <div className="flex items-baseline gap-1 py-1.5 border-b border-stone-100 last:border-0">
+      <span className="text-stone-500 text-sm shrink-0 leading-tight">{label}</span>
+      <span className="flex-1 border-b border-dotted border-stone-300 mb-0.5 mx-1" />
+      <span className="text-stone-900 text-sm text-right leading-tight">{String(value)}</span>
+    </div>
+  )
+}
+
+/** Секция с заголовком и строками */
+function Section({ title, children }) {
+  const hasContent = Array.isArray(children)
+    ? children.some(Boolean)
+    : Boolean(children)
+  if (!hasContent) return null
+  return (
+    <div className="pt-4">
+      <h3 className="text-sm font-semibold text-stone-900 mb-2">{title}</h3>
+      <div>{children}</div>
+    </div>
+  )
+}
+
 export default function ProductModal({ product, onClose }) {
   const { addToCart } = useCartContext()
 
-  // ── ВСЕ ХУКИ ВЫШЕ УСЛОВНОГО RETURN ────────────────────────────────────────
   const [quantity, setQuantity] = useState(1)
 
-  // Сброс количества при смене товара
   useEffect(() => { setQuantity(1) }, [product])
 
-  // Закрытие по Escape
   const handleKey = useCallback((e) => {
     if (e.key === 'Escape') onClose()
   }, [onClose])
@@ -43,7 +67,6 @@ export default function ProductModal({ product, onClose }) {
     }
   }, [product, handleKey])
 
-  // ── Условный return строго ПОСЛЕ всех хуков ──────────────────────────────
   if (!product) return null
 
   const {
@@ -69,16 +92,19 @@ export default function ProductModal({ product, onClose }) {
     setQuantity(isNaN(parsed) || parsed < 1 ? 1 : parsed)
   }
 
-  // Форматирование габаритов
-  const formattedDimensions = (() => {
-    if (!dimensions) return null
-    if (typeof dimensions === 'string') return dimensions
-    const parts = []
-    if (dimensions.width)  parts.push(`Ширина: ${dimensions.width} см`)
-    if (dimensions.height) parts.push(`Высота: ${dimensions.height} см`)
-    if (dimensions.depth)  parts.push(`Глубина/Толщина: ${dimensions.depth} см`)
-    if (dimensions.weight) parts.push(`Вес: ${dimensions.weight}`)
-    return parts.length > 0 ? parts : null
+  // Строки габаритов из объекта dimensions
+  const dimensionRows = (() => {
+    if (!dimensions) return []
+    if (typeof dimensions === 'string') return [{ label: 'Размеры', value: dimensions }]
+    const labelMap = {
+      width:  'Ширина',
+      height: 'Высота / Длина',
+      depth:  'Глубина / Толщина',
+      weight: 'Вес упаковки',
+    }
+    return Object.entries(dimensions)
+      .map(([k, v]) => ({ label: labelMap[k] || k, value: v ? `${v}${typeof v === 'number' ? ' см' : ''}` : null }))
+      .filter(r => r.value)
   })()
 
   return (
@@ -86,7 +112,7 @@ export default function ProductModal({ product, onClose }) {
       {/* Оверлей */}
       <div
         onClick={onClose}
-        className="fixed inset-0 z-[70] bg-stone-950/60 backdrop-blur-sm animate-[fadeIn_0.2s_ease]"
+        className="fixed inset-0 z-[70] bg-stone-950/50 backdrop-blur-sm"
       />
 
       {/* Модальное окно */}
@@ -97,223 +123,166 @@ export default function ProductModal({ product, onClose }) {
         className="fixed inset-0 z-[70] flex items-center justify-center p-3 md:p-6 pointer-events-none"
       >
         <div
-          className="relative bg-white w-full max-w-5xl h-[calc(100vh-24px)] md:h-[calc(100vh-48px)] overflow-y-auto
-                     pointer-events-auto shadow-2xl rounded-lg animate-[slideUp_0.25s_ease]"
+          className="relative bg-white w-full max-w-5xl h-[calc(100vh-24px)] md:h-[calc(100vh-48px)]
+                     overflow-hidden pointer-events-auto shadow-2xl
+                     animate-[slideUp_0.2s_ease]"
           onClick={e => e.stopPropagation()}
         >
           {/* Кнопка закрытия */}
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 w-9 h-9 flex items-center justify-center
-                       text-stone-400 hover:text-stone-900 hover:bg-stone-100 rounded-full
-                       transition-colors text-2xl leading-none"
+            className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center
+                       text-stone-400 hover:text-stone-800 transition-colors text-2xl leading-none"
             aria-label="Закрыть"
           >×</button>
 
-          <div className="grid md:grid-cols-2 gap-0 min-h-full">
+          <div className="grid md:grid-cols-2 h-full">
 
             {/* ── Левая колонка: Фото ── */}
-            <div className="relative bg-stone-100 aspect-[4/3] md:aspect-auto md:h-full overflow-hidden min-h-[300px]">
+            <div className="relative bg-stone-100 aspect-[4/3] md:aspect-auto overflow-hidden">
               {image ? (
-                <Image src={image} alt={name} fill priority sizes="(max-width: 768px) 100vw, 50vw"
-                  className="object-cover" />
+                <Image
+                  src={image} alt={name} fill priority
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  className="object-cover"
+                />
               ) : (
                 <div className="absolute inset-0 flex items-center justify-center text-stone-300 text-sm">
-                  [Фото товара]
+                  Фото отсутствует
                 </div>
               )}
               {badge && (
                 <span className={[
-                  'absolute top-4 left-4 text-white text-xs px-3 py-1.5 tracking-wide z-10 font-medium rounded',
-                  badge === 'Скидка' ? 'bg-red-500' : 'bg-primary-600',
-                ].join(' ')}>{badge}</span>
+                  'absolute top-3 left-3 text-white text-xs px-2.5 py-1 font-medium',
+                  badge === 'Скидка' ? 'bg-red-500' : 'bg-stone-800',
+                ].join(' ')}>
+                  {badge}
+                </span>
               )}
             </div>
 
-            {/* ── Правая колонка: Все 6 пунктов информации ── */}
-            <div className="flex flex-col p-6 md:p-8 gap-6 overflow-y-auto">
+            {/* ── Правая колонка: Информация ── */}
+            <div className="flex flex-col h-full overflow-hidden">
 
-              {/* Название и Категория */}
-              <div>
-                <p className="text-xs text-stone-400 uppercase tracking-wider mb-1 font-medium">{category}</p>
-                <h2 className="font-display text-2xl md:text-3xl text-stone-900 leading-snug">{name}</h2>
+              {/* Заголовок */}
+              <div className="px-6 pt-6 pb-4 border-b border-stone-100">
+                <p className="text-xs text-stone-400 uppercase tracking-widest mb-1">{category}</p>
+                <h2 className="font-display text-xl md:text-2xl text-stone-900 leading-snug pr-8">{name}</h2>
               </div>
 
-              {/* Базовая цена */}
-              <div className="flex items-baseline gap-3 pb-4 border-b border-stone-100">
-                <span className="text-2xl md:text-3xl text-primary-600 font-bold font-display">{fmtR(price)}</span>
-                <span className="text-xs text-stone-400">/ шт.</span>
-                {oldPrice && (
-                  <span className="text-stone-400 line-through text-sm">{fmtR(oldPrice)}</span>
+              {/* Прокручиваемый блок характеристик */}
+              <div className="flex-1 overflow-y-auto px-6 divide-y divide-stone-100">
+
+                {/* ── 1. ГАБАРИТЫ ── */}
+                {dimensionRows.length > 0 && (
+                  <Section title="Габариты">
+                    {dimensionRows.map(r => <SpecRow key={r.label} label={r.label} value={r.value} />)}
+                  </Section>
                 )}
+
+                {/* ── 2. ОСНОВНАЯ ИНФОРМАЦИЯ ── */}
+                {mainInfo && (
+                  <Section title="Основная информация">
+                    {Object.entries(mainInfo).map(([k, v]) => <SpecRow key={k} label={k} value={v} />)}
+                  </Section>
+                )}
+
+                {/* ── 3. ОБЩИЕ ХАРАКТЕРИСТИКИ ── */}
+                {generalSpecs && (
+                  <Section title="Общие характеристики">
+                    {Object.entries(generalSpecs).map(([k, v]) => <SpecRow key={k} label={k} value={v} />)}
+                  </Section>
+                )}
+
+                {/* ── 4. МАТЕРИАЛЫ ── */}
+                {materials?.length > 0 && (
+                  <Section title="Материалы">
+                    <SpecRow label="Материал изделия" value={materials.join(', ')} />
+                  </Section>
+                )}
+
+                {/* ── 5. ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ ── */}
+                {additionalInfo && (
+                  <Section title="Дополнительная информация">
+                    <p className="text-sm text-stone-600 leading-relaxed">{additionalInfo}</p>
+                  </Section>
+                )}
+
+                {/* ── 6. ОПИСАНИЕ (последнее) ── */}
+                {description && (
+                  <Section title="Описание">
+                    <p className="text-sm text-stone-500 leading-relaxed">{description}</p>
+                  </Section>
+                )}
+
+                {/* Нижний отступ */}
+                <div className="h-4" />
               </div>
 
-              {/* Выбор количества и кнопка в корзину */}
-              <div className="bg-stone-50 p-4 rounded-xl border border-stone-200/80 space-y-3">
-                <label className="block text-xs font-semibold text-stone-700 uppercase tracking-wider">
-                  Количество (шт.):
-                </label>
-                <div className="flex items-center gap-3 flex-wrap">
-                  <div className="flex items-center border border-stone-300 rounded-lg bg-white overflow-hidden shadow-sm">
+              {/* ── Нижняя панель: Цена + Количество + Корзина ── */}
+              <div className="border-t border-stone-100 px-6 py-4 bg-white">
+                {/* Цена */}
+                <div className="flex items-baseline gap-2 mb-3">
+                  <span className="text-2xl font-bold text-stone-900">{fmtR(price * quantity)}</span>
+                  {quantity > 1 && (
+                    <span className="text-xs text-stone-400">{fmtR(price)} / шт.</span>
+                  )}
+                  {oldPrice && (
+                    <span className="text-sm text-stone-400 line-through">{fmtR(oldPrice * quantity)}</span>
+                  )}
+                </div>
+
+                {/* Количество + Кнопка */}
+                <div className="flex items-center gap-3">
+                  {/* Счётчик */}
+                  <div className="flex items-center border border-stone-200 bg-stone-50">
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(quantity - 1)}
-                      className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700
-                                 font-bold text-lg flex items-center justify-center transition-colors"
+                      className="w-9 h-10 flex items-center justify-center text-stone-600
+                                 hover:bg-stone-100 transition-colors text-lg font-medium"
                     >−</button>
                     <input
                       type="number"
-                      min="1" max="99999"
+                      min="1"
                       value={quantity}
                       onChange={e => handleQuantityChange(e.target.value)}
-                      className="w-20 h-10 text-center font-bold text-stone-900 text-base
+                      className="w-14 h-10 text-center text-sm font-semibold text-stone-900
                                  focus:outline-none bg-transparent tabular-nums"
                     />
                     <button
                       type="button"
                       onClick={() => handleQuantityChange(quantity + 1)}
-                      className="w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-700
-                                 font-bold text-xl flex items-center justify-center transition-colors"
+                      className="w-9 h-10 flex items-center justify-center text-stone-600
+                                 hover:bg-stone-100 transition-colors text-lg font-medium"
                     >+</button>
                   </div>
 
-                  <div className="flex gap-1.5 flex-wrap">
-                    {[1, 4, 10, 20].map(preset => (
+                  {/* Быстрые пресеты */}
+                  <div className="flex gap-1">
+                    {[1, 4, 10, 20, 50].map(p => (
                       <button
-                        key={preset}
-                        type="button"
-                        onClick={() => setQuantity(preset)}
+                        key={p}
+                        onClick={() => setQuantity(p)}
                         className={[
-                          'px-2.5 py-1.5 text-xs font-medium rounded-md transition-colors border',
-                          quantity === preset
+                          'px-2.5 py-1.5 text-xs border transition-colors',
+                          quantity === p
                             ? 'bg-stone-900 text-white border-stone-900'
-                            : 'bg-white text-stone-600 border-stone-200 hover:bg-stone-100',
+                            : 'text-stone-500 border-stone-200 hover:border-stone-400',
                         ].join(' ')}
-                      >
-                        {preset} шт
-                      </button>
+                      >{p}</button>
                     ))}
                   </div>
+
+                  {/* Кнопка корзины */}
+                  <button
+                    onClick={() => { addToCart(product, quantity); onClose() }}
+                    disabled={!inStock}
+                    className="ml-auto btn-primary py-2.5 px-5 text-sm font-medium disabled:opacity-40"
+                  >
+                    {inStock ? 'В корзину' : 'Нет в наличии'}
+                  </button>
                 </div>
-
-                <button
-                  onClick={() => {
-                    addToCart(product, quantity)
-                    onClose()
-                  }}
-                  disabled={!inStock}
-                  className="w-full btn-primary justify-center py-3 text-sm md:text-base font-semibold shadow-md disabled:opacity-50 mt-2"
-                >
-                  {inStock
-                    ? `Добавить в корзину (${quantity} шт.) — ${fmtR(itemTotal)}`
-                    : 'Нет в наличии'}
-                </button>
-              </div>
-
-              {/* ──────────────── 1. ОПИСАНИЕ ──────────────── */}
-              {description && (
-                <div className="space-y-1.5">
-                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
-                    <span>📝 Описание</span>
-                  </h3>
-                  <p className="text-sm text-stone-600 leading-relaxed bg-white p-3 rounded border border-stone-100">
-                    {description}
-                  </p>
-                </div>
-              )}
-
-              {/* ──────────────── 2. ОСНОВНАЯ ИНФОРМАЦИЯ ──────────────── */}
-              {mainInfo && (
-                <div className="space-y-2">
-                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
-                    <span>📌 Основная информация</span>
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {Object.entries(mainInfo).map(([key, val]) => (
-                      <div key={key} className="bg-stone-50 p-2.5 rounded border border-stone-200/60 flex justify-between">
-                        <span className="text-stone-500">{key}:</span>
-                        <span className="font-semibold text-stone-800 text-right ml-2">{String(val)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ──────────────── 3. ОБЩИЕ ХАРАКТЕРИСТИКИ ──────────────── */}
-              {generalSpecs && (
-                <div className="space-y-2">
-                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
-                    <span>⚙️ Общие характеристики</span>
-                  </h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                    {Object.entries(generalSpecs).map(([key, val]) => (
-                      <div key={key} className="bg-stone-50 p-2.5 rounded border border-stone-200/60 flex justify-between">
-                        <span className="text-stone-500">{key}:</span>
-                        <span className="font-semibold text-stone-800 text-right ml-2">{String(val)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ──────────────── 4. ГАБАРИТЫ ──────────────── */}
-              {formattedDimensions && (
-                <div className="space-y-2">
-                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
-                    <span>📐 Габариты</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    {Array.isArray(formattedDimensions) ? (
-                      formattedDimensions.map((item, idx) => (
-                        <span key={idx} className="bg-stone-100 text-stone-800 font-medium px-3 py-1.5 rounded border border-stone-200">
-                          {item}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="bg-stone-100 text-stone-800 font-medium px-3 py-1.5 rounded border border-stone-200">
-                        {formattedDimensions}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* ──────────────── 5. МАТЕРИАЛЫ ──────────────── */}
-              {materials?.length > 0 && (
-                <div className="space-y-2">
-                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
-                    <span>🪵 Материалы</span>
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {materials.map(m => (
-                      <span key={m} className="text-xs bg-emerald-50 text-emerald-800 font-semibold px-3 py-1.5 rounded border border-emerald-200">
-                        {m}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* ──────────────── 6. ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ ──────────────── */}
-              {additionalInfo && (
-                <div className="space-y-1.5">
-                  <h3 className="text-xs text-stone-900 uppercase tracking-wider font-bold flex items-center gap-1.5">
-                    <span>ℹ️ Дополнительная информация</span>
-                  </h3>
-                  <div className="text-xs bg-amber-50 text-amber-900 p-3 rounded-lg border border-amber-200 leading-relaxed">
-                    {additionalInfo}
-                  </div>
-                </div>
-              )}
-
-              {/* Кнопка закрытия */}
-              <div className="pt-2">
-                <button
-                  onClick={onClose}
-                  className="w-full btn-outline justify-center text-xs py-2.5 text-stone-500"
-                >
-                  Закрыть
-                </button>
               </div>
 
             </div>
