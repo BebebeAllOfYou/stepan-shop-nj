@@ -52,10 +52,12 @@ function parseObjOrJson(val) {
     return JSON.parse(str)
   } catch {
     const result = {}
-    const items = str.split(/\n|;|,/)
+
+    // 1. Попытка распарсить строки с двоеточием, тире или знаком равно (Ключ: Значение)
+    const items = str.split(/\n|;/)
     let hasPairs = false
     for (const item of items) {
-      const parts = item.split(':')
+      const parts = item.split(/[:=\-—]/)
       if (parts.length >= 2) {
         const k = parts[0].trim()
         const v = parts.slice(1).join(':').trim()
@@ -66,6 +68,21 @@ function parseObjOrJson(val) {
       }
     }
     if (hasPairs) return result
+
+    // 2. Попытка распарсить попарные строки (Строка 1 = Ключ, Строка 2 = Значение)
+    const lines = str.split('\n').map(l => l.trim()).filter(Boolean)
+    if (lines.length >= 2) {
+      for (let i = 0; i < lines.length - 1; i += 2) {
+        const k = lines[i]
+        const v = lines[i + 1]
+        if (k && v) {
+          result[k] = v
+          hasPairs = true
+        }
+      }
+      if (hasPairs) return result
+    }
+
     return str
   }
 }
@@ -104,7 +121,7 @@ function buildProductsMap(sheetsArray) {
       mainInfo:        parseObjOrJson(getVal(item, ['mainInfo', 'main_info', 'основная информация'])),
       generalSpecs:    parseObjOrJson(getVal(item, ['generalSpecs', 'general_specs', 'общие характеристики', 'характеристики'])),
       materials:       parseArray(getVal(item, ['materials', 'материалы', 'материал'])),
-      additionalInfo:  parseStr(getVal(item, ['additionalInfo', 'additional_info', 'дополнительная информация', 'доп информация'])),
+      additionalInfo:  parseObjOrJson(getVal(item, ['additionalInfo', 'additional_info', 'дополнительная информация', 'доп информация'])),
       dimensions:      parseObjOrJson(getVal(item, ['dimensions', 'габариты', 'размеры'])),
     }
   }
