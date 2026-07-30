@@ -11,7 +11,7 @@
  *
  * Если строка пустая — сайт будет использовать цены из локального products.json
  */
-export const SHEETS_PRICES_URL = 'https://script.google.com/macros/s/AKfycbypZg3ECx-siAGXfi4zoXfhDOwCU0QEKjkUXMr8bRXJ6Jg-UHwhY_hg4vZ2L0Fy-Mra/exec'  // ← вставьте сюда URL вида
+export const SHEETS_PRICES_URL = 'https://script.google.com/macros/s/AKfycbxz20FlFtKOSJB4vNFyk8ErJ96f5Z8LYyHjQ_kozcIb2ovAfDM1YwGgzDOHPb0AmoW2/exec'  // ← вставьте сюда URL вида
 
 /**
  * Время жизни кэша цен в миллисекундах.
