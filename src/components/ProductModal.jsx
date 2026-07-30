@@ -1,14 +1,13 @@
 /**
- * ProductModal — предпросмотр товара, оптовый минималистичный стиль
+ * ProductModal — предпросмотр товара в оптовом минималистичном стиле
  *
- * Порядок блоков (технические данные — первые, описание — в конце):
- *   1. Фото + цена + количество + кнопка корзины
- *   2. Габариты
- *   3. Основная информация
- *   4. Общие характеристики
- *   5. Материалы
- *   6. Дополнительная информация
- *   7. Описание (последнее)
+ * Порядок блоков:
+ *   1. Габариты (Габариты упаковки и Габариты предмета)
+ *   2. Основная информация
+ *   3. Общие характеристики
+ *   4. Материалы
+ *   5. Дополнительная информация (включая «Площадь покрытия»)
+ *   6. Описание (последнее)
  */
 
 'use client'
@@ -80,7 +79,7 @@ export default function ProductModal({ product, onClose }) {
     mainInfo       = null,
     generalSpecs   = null,
     materials      = [],
-    additionalInfo = '',
+    additionalInfo = null,
     dimensions     = null,
     inStock        = true,
   } = product
@@ -96,14 +95,25 @@ export default function ProductModal({ product, onClose }) {
   const dimensionRows = (() => {
     if (!dimensions) return []
     if (typeof dimensions === 'string') return [{ label: 'Размеры', value: dimensions }]
+
     const labelMap = {
-      width:  'Ширина',
-      height: 'Высота / Длина',
-      depth:  'Глубина / Толщина',
-      weight: 'Вес упаковки',
+      packageLength: 'Длина упаковки',
+      packageHeight: 'Высота упаковки',
+      packageWidth:  'Ширина упаковки',
+      itemHeight:    'Высота предмета',
+      itemWidth:     'Ширина предмета',
+      itemDepth:     'Глубина предмета',
+      width:         'Ширина предмета',
+      height:        'Высота предмета',
+      depth:         'Глубина предмета',
+      weight:        'Вес упаковки',
     }
+
     return Object.entries(dimensions)
-      .map(([k, v]) => ({ label: labelMap[k] || k, value: v ? `${v}${typeof v === 'number' ? ' см' : ''}` : null }))
+      .map(([k, v]) => ({
+        label: labelMap[k] || k,
+        value: v ? `${v}${typeof v === 'number' ? ' см' : ''}` : null,
+      }))
       .filter(r => r.value)
   })()
 
@@ -204,7 +214,11 @@ export default function ProductModal({ product, onClose }) {
                 {/* ── 5. ДОПОЛНИТЕЛЬНАЯ ИНФОРМАЦИЯ ── */}
                 {additionalInfo && (
                   <Section title="Дополнительная информация">
-                    <p className="text-sm text-stone-600 leading-relaxed">{additionalInfo}</p>
+                    {typeof additionalInfo === 'object' ? (
+                      Object.entries(additionalInfo).map(([k, v]) => <SpecRow key={k} label={k} value={v} />)
+                    ) : (
+                      <p className="text-sm text-stone-600 leading-relaxed">{String(additionalInfo)}</p>
+                    )}
                   </Section>
                 )}
 

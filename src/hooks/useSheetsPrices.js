@@ -45,20 +45,28 @@ function parseNum(val) {
 function parseObjOrJson(val) {
   if (!val) return null
   if (typeof val === 'object') return val
+  const str = String(val).trim()
+  if (!str) return null
+
   try {
-    return JSON.parse(val)
+    return JSON.parse(str)
   } catch {
     const result = {}
-    const lines = String(val).split('\n')
-    for (const line of lines) {
-      const parts = line.split(':')
+    const items = str.split(/\n|;|,/)
+    let hasPairs = false
+    for (const item of items) {
+      const parts = item.split(':')
       if (parts.length >= 2) {
         const k = parts[0].trim()
         const v = parts.slice(1).join(':').trim()
-        if (k) result[k] = v
+        if (k && v) {
+          result[k] = v
+          hasPairs = true
+        }
       }
     }
-    return Object.keys(result).length > 0 ? result : null
+    if (hasPairs) return result
+    return str
   }
 }
 
