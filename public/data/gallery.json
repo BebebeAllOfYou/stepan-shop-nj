@@ -11,65 +11,65 @@
     },
     {
       "id": 2,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "small",
       "image": "/images/gallery/interior-02.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм) (4 шт.)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 3,
-      "title": "Кирпич (МДФ 6 мм)",
+      "title": "Кирпич",
       "size": "small",
       "image": "/images/gallery/interior-03.jpg",
       "productId": 2,
-      "productName": "Кирпич (МДФ 6 мм)",
+      "productName": "Кирпич",
       "category": "Панели под покраску"
     },
     {
       "id": 4,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-04.jpg",
       "productId": 1,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 5,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-05.jpg",
       "productId": 4,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 6,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-06.jpg",
       "productId": 1,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 7,
-      "title": "Прямая рейка (МДФ 6 мм)",
+      "title": "Прямая рейка",
       "size": "small",
       "image": "/images/gallery/interior-07.jpg",
       "productId": 4,
-      "productName": "Прямая рейка (МДФ 6 мм)",
+      "productName": "Прямая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 8,
-      "title": "Косая рейка (МДФ 6 мм) ",
+      "title": "Косая рейка",
       "size": "small",
       "image": "/images/gallery/interior-08.jpg",
       "productId": 6,
-      "productName": "Косая рейка (МДФ 6 мм) ",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
@@ -83,20 +83,20 @@
     },
     {
       "id": 10,
-      "title": "Прямая рейка (МДФ 6 мм)",
+      "title": "Прямая рейка",
       "size": "small",
       "image": "/images/gallery/interior-10.jpg",
       "productId": 4,
-      "productName": "Прямая рейка (МДФ 6 мм)",
+      "productName": "Прямая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 11,
-      "title": "Прямая рейка (МДФ 6 мм)",
+      "title": "Прямая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-11.jpg",
       "productId": 4,
-      "productName": "Прямая рейка (МДФ 6 мм)",
+      "productName": "Прямая рейка",
       "category": "Панели под покраску"
     },
     {
@@ -146,101 +146,101 @@
     },
     {
       "id": 17,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "small",
       "image": "/images/gallery/interior-17.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 18,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-18.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 19,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "small",
       "image": "/images/gallery/interior-19.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 20,
-      "title": "Прямая рейка (МДФ 6 мм)",
+      "title": "Прямая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-20.jpg",
       "productId": 1,
-      "productName": "Прямая рейка (МДФ 6 мм)",
+      "productName": "Прямая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 21,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "large",
       "image": "/images/gallery/interior-21.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 22,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "small",
       "image": "/images/gallery/interior-22.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 23,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-23.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 24,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "small",
       "image": "/images/gallery/interior-24.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм)",
+      "productName": "Косая рейка",
       "category": "Панели под покраску"
     },
     {
       "id": 25,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": "/images/gallery/interior-25.jpg",
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм) ",
+      "productName": "Косая рейка ",
       "category": "Панели под покраску"
     },
     {
       "id": 26,
-      "title": "Кирпич (МДФ 6 мм) 6 шт.",
+      "title": "Кирпич",
       "size": "small",
       "image": null,
       "productId": 5,
-      "productName": "Кирпич (МДФ 6 мм) (6 шт.)",
+      "productName": "Кирпич",
       "category": "Панели"
     },
     {
       "id": 27,
-      "title": "Косая рейка (МДФ 6 мм) 6 шт.",
+      "title": "Косая рейка",
       "size": "medium",
       "image": null,
       "productId": 6,
-      "productName": "Косая рейка (МДФ 6 мм) (6 шт.)",
+      "productName": "Косая рейка",
       "category": "Деревянные рейки"
     },
     {
@@ -249,7 +249,7 @@
       "size": "small",
       "image": null,
       "productId": 14,
-      "productName": "Панель монолит \"Табак\" (4 шт.)",
+      "productName": "Панель монолит \"Табак\"",
       "category": "Панели"
     },
     {
@@ -258,7 +258,7 @@
       "size": "small",
       "image": null,
       "productId": 9,
-      "productName": "Вешалка монолит \"Крафт\" (3 шт.)",
+      "productName": "Вешалка монолит \"Крафт\"",
       "category": "Вешалки"
     },
     {
@@ -267,7 +267,7 @@
       "size": "medium",
       "image": null,
       "productId": 15,
-      "productName": "Панель монолит \"Крафт\" (4 шт.)",
+      "productName": "Панель монолит \"Крафт\"",
       "category": "Панели"
     },
     {
@@ -276,7 +276,7 @@
       "size": "small",
       "image": null,
       "productId": 10,
-      "productName": "Вешалка монолит \"Вотан\" (3 шт.)",
+      "productName": "Вешалка монолит \"Вотан\"",
       "category": "Вешалки"
     },
     {
@@ -285,7 +285,7 @@
       "size": "large",
       "image": null,
       "productId": 16,
-      "productName": "Панель монолит \"Вотан\" (4 шт.)",
+      "productName": "Панель монолит \"Вотан\"",
       "category": "Панели"
     },
     {
@@ -294,7 +294,7 @@
       "size": "small",
       "image": null,
       "productId": 11,
-      "productName": "Вешалка монолит \"Шимо\" (3 шт.)",
+      "productName": "Вешалка монолит \"Шимо\"",
       "category": "Вешалки"
     },
     {
@@ -303,34 +303,34 @@
       "size": "medium",
       "image": null,
       "productId": 17,
-      "productName": "Панель монолит \"Шимо\" (4 шт.)",
+      "productName": "Панель монолит \"Шимо\"",
       "category": "Панели"
     },
     {
       "id": 35,
-      "title": "Прямая рейка (МДФ 6 мм)",
+      "title": "Прямая рейка",
       "size": "small",
       "image": null,
       "productId": 1,
-      "productName": "Прямая рейка (МДФ 6 мм) (4 шт.)",
+      "productName": "Прямая рейка",
       "category": "Деревянные рейки"
     },
     {
       "id": 36,
-      "title": "Кирпич (МДФ 6 мм)",
+      "title": "Кирпич",
       "size": "small",
       "image": null,
       "productId": 2,
-      "productName": "Кирпич (МДФ 6 мм) (4 шт.)",
+      "productName": "Кирпич",
       "category": "Панели"
     },
     {
       "id": 37,
-      "title": "Косая рейка (МДФ 6 мм)",
+      "title": "Косая рейка",
       "size": "medium",
       "image": null,
       "productId": 3,
-      "productName": "Косая рейка (МДФ 6 мм) (4 шт.)",
+      "productName": "Косая рейка",
       "category": "Деревянные рейки"
     },
     {
@@ -339,7 +339,7 @@
       "size": "small",
       "image": null,
       "productId": 12,
-      "productName": "Панель монолит \"УЗОР\" (4 шт.)",
+      "productName": "Панель монолит \"УЗОР\"",
       "category": "Панели"
     },
     {
@@ -348,7 +348,7 @@
       "size": "medium",
       "image": null,
       "productId": 7,
-      "productName": "Вешалка монолит \"Сонома\" (3 шт.)",
+      "productName": "Вешалка монолит \"Сонома\"",
       "category": "Вешалки"
     },
     {
@@ -357,7 +357,7 @@
       "size": "small",
       "image": null,
       "productId": 13,
-      "productName": "Панель монолит \"Сонома\" (4 шт.)",
+      "productName": "Панель монолит \"Сонома\"",
       "category": "Панели"
     }
   ]
