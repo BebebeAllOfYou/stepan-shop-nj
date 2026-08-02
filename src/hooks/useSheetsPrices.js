@@ -125,17 +125,23 @@ function parseObjOrJson(val) {
   const result = {}
   const lines = str.split(/\r?\n|;/).map(l => l.trim()).filter(Boolean)
 
-  for (const line of lines) {
-    const parts = line.split(/[:=\-—]/)
-    if (parts.length >= 2) {
-      const rawK = parts[0].trim()
-      const rawV = parts.slice(1).join(':').trim()
+  let i = 0
+  while (i < lines.length) {
+    const line = lines[i]
+
+    // 1. Строка с разделителем: «Ключ: Значение» или «Ключ - Значение»
+    const sepIdx = line.search(/[:=—]/)
+    if (sepIdx > 0) {
+      const rawK = line.substring(0, sepIdx).trim()
+      const rawV = line.substring(sepIdx + 1).trim()
       if (rawK && rawV) {
         result[normalizeKeyName(rawK)] = rawV
+        i++
         continue
       }
     }
 
+    // 2. Поиск известного ключа в начале строки
     let matchedKey = null
     for (const keyCandidate of KNOWN_KEYS) {
       if (line.toLowerCase().startsWith(keyCandidate.toLowerCase())) {
@@ -146,12 +152,27 @@ function parseObjOrJson(val) {
     }
 
     if (matchedKey) {
-      const restVal = line.substring(matchedKey.length).replace(/^[:\s\-—]+/, '').trim()
+      const restVal = line.substring(matchedKey.length).replace(/^[\s\-—]+/, '').trim()
       if (restVal) {
+        // Значение стоит сразу после ключа на той же строке: «Длина упаковки 52 см»
         result[normalizeKeyName(matchedKey)] = restVal
+        i++
         continue
+      } else {
+        // Значение — следующая строка (формат Google Sheets: ключ\nзначение)
+        const nextLine = lines[i + 1]
+        const nextIsKey = nextLine
+          ? KNOWN_KEYS.some(k => nextLine.toLowerCase().startsWith(k.toLowerCase()))
+          : false
+        if (nextLine && !nextIsKey) {
+          result[normalizeKeyName(matchedKey)] = nextLine
+          i += 2
+          continue
+        }
       }
     }
+
+    i++
   }
 
   if (Object.keys(result).length > 0) {
