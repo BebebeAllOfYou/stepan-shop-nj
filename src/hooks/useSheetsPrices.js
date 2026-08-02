@@ -42,49 +42,123 @@ function parseNum(val) {
   return isNaN(n) ? null : n
 }
 
+const KNOWN_KEYS = [
+  'Количество в упаковке (шт.)',
+  'Количество в упаковке',
+  'Вид рисунка',
+  'Форма профиля',
+  'Тип поверхности',
+  'Фактура поверхности',
+  'Фактура',
+  'Покрытие',
+  'Узор',
+  'Цвет',
+  'Артикул',
+  'Бренд',
+  'Страна производства',
+  'Тип монтажа',
+  'Способ монтажа панели',
+  'Способ монтажа',
+  'Площадь покрытия',
+  'Вид стеновых панелей',
+  'Назначение стеновой панели',
+  'Назначение',
+  'Влагостойкость',
+  'Ударопрочность',
+  'Длина упаковки',
+  'Высота упаковки',
+  'Ширина упаковки',
+  'Высота предмета',
+  'Ширина предмета',
+  'Глубина предмета',
+  'Вес с упаковкой (кг)',
+  'Вес с упаковкой',
+  'Вес упаковки',
+]
+
+const KEY_NORMALIZATION = {
+  'количество в упаковке (шт.)': 'Количество в упаковке (шт.)',
+  'количество в упаковке':        'Количество в упаковке (шт.)',
+  'вид рисунка':                 'Вид рисунка',
+  'форма профиля':               'Вид рисунка',
+  'узор':                        'Вид рисунка',
+  'фактура':                     'Вид рисунка',
+  'тип поверхности':             'Тип поверхности',
+  'покрытие':                    'Тип поверхности',
+  'фактура поверхности':         'Тип поверхности',
+  'цвет':                        'Цвет',
+  'артикул':                     'Артикул',
+  'бренд':                       'Бренд',
+  'страна производства':         'Страна производства',
+  'тип монтажа':                 'Тип монтажа',
+  'способ монтажа':              'Тип монтажа',
+  'способ монтажа панели':       'Тип монтажа',
+}
+
+function normalizeKeyName(key) {
+  const clean = String(key).trim().toLowerCase()
+  return KEY_NORMALIZATION[clean] || String(key).trim()
+}
+
 function parseObjOrJson(val) {
   if (!val) return null
-  if (typeof val === 'object') return val
+  if (typeof val === 'object') {
+    const normalized = {}
+    for (const [k, v] of Object.entries(val)) {
+      if (v !== null && v !== undefined && v !== '') {
+        normalized[normalizeKeyName(k)] = typeof v === 'string' ? v.trim() : v
+      }
+    }
+    return Object.keys(normalized).length > 0 ? normalized : null
+  }
+
   const str = String(val).trim()
   if (!str) return null
 
   try {
-    return JSON.parse(str)
-  } catch {
-    const result = {}
+    const parsed = JSON.parse(str)
+    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+      return parseObjOrJson(parsed)
+    }
+  } catch {}
 
-    // 1. Попытка распарсить строки с двоеточием, тире или знаком равно (Ключ: Значение)
-    const items = str.split(/\n|;/)
-    let hasPairs = false
-    for (const item of items) {
-      const parts = item.split(/[:=\-—]/)
-      if (parts.length >= 2) {
-        const k = parts[0].trim()
-        const v = parts.slice(1).join(':').trim()
-        if (k && v) {
-          result[k] = v
-          hasPairs = true
+  const result = {}
+  const lines = str.split(/\r?\n|;/).map(l => l.trim()).filter(Boolean)
+
+  for (const line of lines) {
+    const parts = line.split(/[:=\-—]/)
+    if (parts.length >= 2) {
+      const rawK = parts[0].trim()
+      const rawV = parts.slice(1).join(':').trim()
+      if (rawK && rawV) {
+        result[normalizeKeyName(rawK)] = rawV
+        continue
+      }
+    }
+
+    let matchedKey = null
+    for (const keyCandidate of KNOWN_KEYS) {
+      if (line.toLowerCase().startsWith(keyCandidate.toLowerCase())) {
+        if (!matchedKey || keyCandidate.length > matchedKey.length) {
+          matchedKey = keyCandidate
         }
       }
     }
-    if (hasPairs) return result
 
-    // 2. Попытка распарсить попарные строки (Строка 1 = Ключ, Строка 2 = Значение)
-    const lines = str.split('\n').map(l => l.trim()).filter(Boolean)
-    if (lines.length >= 2) {
-      for (let i = 0; i < lines.length - 1; i += 2) {
-        const k = lines[i]
-        const v = lines[i + 1]
-        if (k && v) {
-          result[k] = v
-          hasPairs = true
-        }
+    if (matchedKey) {
+      const restVal = line.substring(matchedKey.length).replace(/^[:\s\-—]+/, '').trim()
+      if (restVal) {
+        result[normalizeKeyName(matchedKey)] = restVal
+        continue
       }
-      if (hasPairs) return result
     }
-
-    return str
   }
+
+  if (Object.keys(result).length > 0) {
+    return result
+  }
+
+  return null
 }
 
 function parseArray(val) {

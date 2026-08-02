@@ -29,6 +29,14 @@ export function useProducts({ initialCategory = 'all' } = {}) {
           const s = productsMap[p.id]
           if (!s) return p
 
+          const mergeSpecs = (baseSpecs, sheetSpecs) => {
+            if (!sheetSpecs) return baseSpecs
+            if (typeof sheetSpecs === 'object' && typeof baseSpecs === 'object') {
+              return { ...baseSpecs, ...sheetSpecs }
+            }
+            return sheetSpecs || baseSpecs
+          }
+
           return {
             ...p,
             ...(s.name            !== null ? { name:            s.name            } : {}),
@@ -41,11 +49,11 @@ export function useProducts({ initialCategory = 'all' } = {}) {
             ...(s.inStock         !== null ? { inStock:         s.inStock         } : {}),
             ...(s.featured        !== null ? { featured:        s.featured        } : {}),
             ...(s.wildberriesLink !== null ? { wildberriesLink: s.wildberriesLink } : {}),
-            ...(s.mainInfo        !== null ? { mainInfo:        s.mainInfo        } : {}),
-            ...(s.generalSpecs    !== null ? { generalSpecs:    s.generalSpecs    } : {}),
-            ...(s.materials       !== null ? { materials:       s.materials       } : {}),
-            ...(s.additionalInfo  !== null ? { additionalInfo:  s.additionalInfo  } : {}),
-            ...(s.dimensions      !== null ? { dimensions:      s.dimensions      } : {}),
+            mainInfo:       mergeSpecs(p.mainInfo,       s.mainInfo),
+            generalSpecs:   mergeSpecs(p.generalSpecs,   s.generalSpecs),
+            materials:      s.materials ?? p.materials,
+            additionalInfo: mergeSpecs(p.additionalInfo, s.additionalInfo),
+            dimensions:     mergeSpecs(p.dimensions,     s.dimensions),
           }
         })
     return merged.filter(p => p.name?.trim())
