@@ -20,14 +20,14 @@ import productsData            from '../../../../public/data/products.json'
 /** Возвращает объект категории по slug или null */
 function getCategoryBySlug(slug) {
   return categoriesData.categories.find(
-    c => c.slug === slug && c.id !== 'all'
+    c => c.slug === slug
   ) ?? null
 }
 
-/** Статическая генерация маршрутов для всех категорий (кроме «all») */
+/** Статическая генерация маршрутов для всех категорий (включая «Все товары») */
 export function generateStaticParams() {
   return categoriesData.categories
-    .filter(c => c.id !== 'all' && c.slug)
+    .filter(c => c.slug)
     .map(c => ({ slug: c.slug }))
 }
 
@@ -57,10 +57,10 @@ export default async function CategoryPage({ params }) {
   // Если slug не существует — стандартная 404
   if (!cat) notFound()
 
-  // Товары этой категории (для schema.org)
-  const categoryProducts = productsData.products.filter(
-    p => p.category === cat.id && p.name?.trim()
-  )
+  // Для slug='all' включаем все товары; для остальных — фильтруем по категории
+  const categoryProducts = cat.id === 'all'
+    ? productsData.products.filter(p => p.name?.trim())
+    : productsData.products.filter(p => p.category === cat.id && p.name?.trim())
 
   // Schema.org ItemList для поисковиков
   const itemListJsonLd = {
@@ -90,17 +90,23 @@ export default async function CategoryPage({ params }) {
     })),
   }
 
+  // Для «Все товары» хлебные крошки показывают два уровня, для специфичных — три
+  const breadcrumbs = cat.id === 'all'
+    ? [
+        { label: 'Главная', href: '/'       },
+        { label: 'Каталог'               },
+      ]
+    : [
+        { label: 'Главная', href: '/'       },
+        { label: 'Каталог',  href: '/catalog' },
+        { label: cat.label                   },
+      ]
+
   return (
     <main className="pt-16">
       <JsonLd data={itemListJsonLd} />
 
-      <Breadcrumbs
-        items={[
-          { label: 'Главная',  href: '/'        },
-          { label: 'Каталог',  href: '/catalog' },
-          { label: cat.label                    },
-        ]}
-      />
+      <Breadcrumbs items={breadcrumbs} />
 
       <CategoryProductGrid
         category={cat.id}
