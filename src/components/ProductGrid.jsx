@@ -16,8 +16,8 @@
 
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useFetch }  from '../hooks/useFetch'
+import { useRouter }   from 'next/navigation'
+import { useProducts } from '../hooks/useProducts'
 
 /** Скелетон карточки категории */
 function SkeletonCategory() {
@@ -82,8 +82,7 @@ function CategoryCard({ cat, onClick }) {
 export default function ProductGrid() {
   const router = useRouter()
 
-  const { data: categoriesData, loading } = useFetch('/data/categories.json')
-  const categories = categoriesData?.categories ?? []
+  const { categories, loading } = useProducts()
 
   function handleCategoryClick(cat) {
     router.push(`/catalog/${cat.slug}/`)
