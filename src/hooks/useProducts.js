@@ -10,8 +10,8 @@ import { useSheetsPrices }   from './useSheetsPrices'
 
 const PAGE_SIZE = 8
 
-export function useProducts() {
-  const [activeCategory, setActiveCategory] = useState('all')
+export function useProducts({ initialCategory = 'all' } = {}) {
+  const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [sort,           setSort]           = useState('default')
   const [visibleCount,   setVisibleCount]   = useState(PAGE_SIZE)
 

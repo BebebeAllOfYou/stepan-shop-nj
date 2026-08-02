@@ -2,6 +2,7 @@
   "categories": [
     {
       "id": "Панели под покраску",
+      "slug": "panels-painting",
       "label": "Панели под покраску",
       "description": "Декоративные стеновые панели: Прямые и косые рейки из МДФ ",
       "image": "/images/categories/Панели под покраску.jpg",
@@ -9,6 +10,7 @@
     },
     {
       "id": "Вешалки монолит в цвете",
+      "slug": "hooks-color",
       "label": "Вешалки монолит в цвете",
       "description": "Настенные вешалки из МДФ в различных цветах.",
       "image": "/images/categories/Вешалки монолит в цвете.jpg",
@@ -16,6 +18,7 @@
     },
     {
       "id": "Панели Монолит в цвете",
+      "slug": "panels-color",
       "label": "Панели Монолит в цвете",
       "description": "Декоративные стеновые панели: монолит в цвете",
       "image": "/images/categories/Панели Монолит в цвете.jpg",
@@ -23,6 +26,7 @@
     },
     {
       "id": "all",
+      "slug": "all",
       "label": "Все товары",
       "description": "Полный каталог — рейки, панели, вешалки...",
       "image": "/images/categories/all.jpg",

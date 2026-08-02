@@ -13,10 +13,11 @@
 
 'use client'
 
-import { useRef, useState } from 'react'
-import { useProducts }      from '../hooks/useProducts'
-import ProductCard          from './ProductCard'
-import ProductModal         from './ProductModal'
+import { useState }           from 'react'
+import { useRouter }          from 'next/navigation'
+import { useProducts }        from '../hooks/useProducts'
+import ProductCard            from './ProductCard'
+import ProductModal           from './ProductModal'
 
 const SORT_OPTIONS = [
   { value: 'default',    label: 'По умолчанию'   },
@@ -53,6 +54,7 @@ function CategoryCard({ cat, isActive, onClick }) {
   return (
     <button
       onClick={onClick}
+      aria-current={isActive ? 'true' : undefined}
       className={[
         'group text-left w-full transition-all duration-300 focus:outline-none',
         isActive ? 'ring-2 ring-primary-600 ring-offset-2' : '',
@@ -118,7 +120,7 @@ function CategoryCard({ cat, isActive, onClick }) {
 }
 
 export default function ProductGrid() {
-  const productsRef = useRef(null)
+  const router = useRouter()
 
   const [previewProduct, setPreviewProduct] = useState(null)
 
@@ -127,8 +129,6 @@ export default function ProductGrid() {
     categories,
     loading,
     error,
-    activeCategory,
-    setActiveCategory,
     sort,
     setSort,
     showMore,
@@ -136,12 +136,16 @@ export default function ProductGrid() {
     totalFiltered,
   } = useProducts()
 
-  function handleCategoryClick(catId) {
-    setActiveCategory(catId)
-    // Плавный скролл к сетке товаров
-    setTimeout(() => {
-      productsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }, 50)
+  // Определяем активную категорию по текущему URL-пути
+  // /catalog/ → 'all', /catalog/panels-painting/ → нет совпадения (эта страница — /catalog/)
+  const activeCategory = 'all'
+
+  function handleCategoryClick(cat) {
+    if (cat.id === 'all') {
+      router.push('/catalog/')
+    } else {
+      router.push(`/catalog/${cat.slug}/`)
+    }
   }
 
   return (
@@ -163,7 +167,7 @@ export default function ProductGrid() {
                   key={cat.id}
                   cat={cat}
                   isActive={activeCategory === cat.id}
-                  onClick={() => handleCategoryClick(cat.id)}
+                  onClick={() => handleCategoryClick(cat)}
                 />
               ))
           }
@@ -171,7 +175,6 @@ export default function ProductGrid() {
 
         {/* ── Заголовок сетки товаров + сортировка ── */}
         <div
-          ref={productsRef}
           className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pt-2 border-t border-stone-100"
         >
           <div className="flex items-baseline gap-3">
