@@ -221,7 +221,7 @@ function buildProductsMap(sheetsArray) {
       wildberriesLink: parseStr(getVal(item, ['wildberriesLink', 'wildberries', 'wb', 'вайлдберриз'])),
       mainInfo:        parseObjOrJson(getVal(item, ['mainInfo', 'main_info', 'основная информация'])),
       generalSpecs:    parseObjOrJson(getVal(item, ['generalSpecs', 'general_specs', 'общие характеристики', 'характеристики'])),
-      complectation:   parseStr(getVal(item, ['complectation', 'equipment', 'packageContents', 'комплектация', 'набор', 'состав комплекта', 'комплектующие'])),
+      complectation:   parseObjOrJson(getVal(item, ['complectation', 'equipment', 'packageContents', 'комплектация', 'набор', 'состав комплекта', 'комплектующие'])),
       materials:       parseArray(getVal(item, ['materials', 'материалы', 'материал'])),
       additionalInfo:  parseObjOrJson(getVal(item, ['additionalInfo', 'additional_info', 'дополнительная информация', 'доп информация'])),
       dimensions:      parseObjOrJson(getVal(item, ['dimensions', 'габариты', 'размеры'])),

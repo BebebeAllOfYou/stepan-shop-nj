@@ -208,11 +208,25 @@ export default function ProductModal({ product, onClose }) {
                 {/* ── 4. КОМПЛЕКТАЦИЯ ── */}
                 {complectation && (
                   <Section title="Комплектация">
-                    {typeof complectation === 'object' ? (
+                    {typeof complectation === 'object' && !Array.isArray(complectation) ? (
                       Object.entries(complectation).map(([k, v]) => <SpecRow key={k} label={k} value={v} />)
-                    ) : (
-                      <SpecRow label="Состав комплекта" value={String(complectation)} />
-                    )}
+                    ) : Array.isArray(complectation) ? (
+                      complectation.map((item, idx) => <SpecRow key={idx} label={item} value="" />)
+                    ) : typeof complectation === 'string' ? (
+                      complectation.split(/\r?\n|;/).map(s => s.trim()).filter(Boolean).map((line, idx) => {
+                        const sepIdx = line.search(/[:=—]/)
+                        if (sepIdx > 0) {
+                          return (
+                            <SpecRow
+                              key={idx}
+                              label={line.substring(0, sepIdx).trim()}
+                              value={line.substring(sepIdx + 1).trim()}
+                            />
+                          )
+                        }
+                        return <SpecRow key={idx} label={line} value="" />
+                      })
+                    ) : null}
                   </Section>
                 )}
 
