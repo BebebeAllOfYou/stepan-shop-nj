@@ -99,7 +99,7 @@ export default function ProductGrid() {
         </div>
 
         {/* ── Карточки категорий ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 items-start">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCategory key={i} />)
             : categories.map(cat => (
