@@ -8,8 +8,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import Image          from 'next/image'
-import { useGallery } from '../hooks/useGallery'
-import { useFetch }   from '../hooks/useFetch'
+import { useGallery }  from '../hooks/useGallery'
+import { useProducts } from '../hooks/useProducts'
 import ProductModal   from './ProductModal'
 
 function GalleryCard({ item, onClick }) {
@@ -52,7 +52,7 @@ function GalleryCard({ item, onClick }) {
 
 export default function InteriorGallery() {
   const { gallery, loading } = useGallery()
-  const { data: productsData } = useFetch('/data/products.json')
+  const { allProducts }      = useProducts()
 
   const [lightboxIndex, setLightboxIndex] = useState(null)
   const [selectedProduct, setSelectedProduct] = useState(null)
@@ -89,7 +89,7 @@ export default function InteriorGallery() {
 
   // Открытие модального окна товара
   function handleOpenProduct(item) {
-    const allProds = productsData?.products ?? []
+    const allProds = allProducts ?? []
     const found = allProds.find(p => p.id === item.productId) || 
                   allProds.find(p => p.name && p.name.toLowerCase().includes(item.productName?.toLowerCase()))
 

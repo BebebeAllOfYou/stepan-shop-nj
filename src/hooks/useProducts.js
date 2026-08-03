@@ -92,6 +92,7 @@ export function useProducts({ initialCategory = 'all' } = {}) {
 
   return {
     products,
+    allProducts,
     categories,
     loading: loadingP || loadingPrices,
     error:   errorP,
