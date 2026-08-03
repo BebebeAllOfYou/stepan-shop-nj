@@ -1,15 +1,13 @@
-/**
- * Страница «О нас» — server component с метаданными
- * Клиентский контент вынесен в ./AboutContent.jsx
- */
+/** Страница «О нас» */
 
-import AboutContent from './AboutContent'
-import JsonLd       from '../../components/JsonLd'
+import Hero        from '../../components/Hero'
+import Breadcrumbs from '../../components/Breadcrumbs'
+import JsonLd      from '../../components/JsonLd'
 import { SITE_URL } from '../../config/site'
 
 export const metadata = {
   title: 'О нас',
-  description: 'Производитель декоративных стеновых панелей и настенных вешалок из МДФ.',
+  description: 'СТЕПАН — производитель декоративных стеновых панелей и настенных вешалок.',
   alternates: { canonical: '/about/' },
 }
 
@@ -23,9 +21,10 @@ const aboutJsonLd = {
 
 export default function AboutPage() {
   return (
-    <>
+    <main className="pt-16">
       <JsonLd data={aboutJsonLd} />
-      <AboutContent />
-    </>
+      <Breadcrumbs items={[{ label: 'Главная', href: '/' }, { label: 'О нас' }]} bg="bg-stone-50" />
+      <Hero />
+    </main>
   )
 }
