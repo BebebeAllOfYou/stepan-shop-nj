@@ -51,6 +51,7 @@ export function useProducts({ initialCategory = 'all' } = {}) {
             ...(s.wildberriesLink !== null ? { wildberriesLink: s.wildberriesLink } : {}),
             mainInfo:       mergeSpecs(p.mainInfo,       s.mainInfo),
             generalSpecs:   mergeSpecs(p.generalSpecs,   s.generalSpecs),
+            complectation:  s.complectation ?? p.complectation,
             materials:      s.materials ?? p.materials,
             additionalInfo: mergeSpecs(p.additionalInfo, s.additionalInfo),
             dimensions:     mergeSpecs(p.dimensions,     s.dimensions),

@@ -78,6 +78,7 @@ export default function ProductModal({ product, onClose }) {
     description    = '',
     mainInfo       = null,
     generalSpecs   = null,
+    complectation  = null,
     materials      = [],
     additionalInfo = null,
     dimensions     = null,
@@ -201,6 +202,17 @@ export default function ProductModal({ product, onClose }) {
                 {generalSpecs && (
                   <Section title="Общие характеристики">
                     {Object.entries(generalSpecs).map(([k, v]) => <SpecRow key={k} label={k} value={v} />)}
+                  </Section>
+                )}
+
+                {/* ── 4. КОМПЛЕКТАЦИЯ ── */}
+                {complectation && (
+                  <Section title="Комплектация">
+                    {typeof complectation === 'object' ? (
+                      Object.entries(complectation).map(([k, v]) => <SpecRow key={k} label={k} value={v} />)
+                    ) : (
+                      <SpecRow label="Состав комплекта" value={String(complectation)} />
+                    )}
                   </Section>
                 )}
 
