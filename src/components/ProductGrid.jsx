@@ -17,7 +17,7 @@
 'use client'
 
 import { useRouter }   from 'next/navigation'
-import Image          from 'next/image'
+import Image           from 'next/image'
 import { useProducts } from '../hooks/useProducts'
 
 /** Скелетон карточки категории */
@@ -39,13 +39,13 @@ function CategoryCard({ cat, onClick }) {
       className="group text-left w-full transition-all duration-300 focus:outline-none"
     >
       {/* Картинка */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-stone-100 mb-3">
+      <div className="relative aspect-[4/3] overflow-hidden bg-stone-100 mb-4">
         {cat.image ? (
           <Image
             src={cat.image}
             alt={cat.label}
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+            sizes="(max-width: 640px) 100vw, 50vw"
             className="object-cover transition-all duration-500 group-hover:scale-105"
           />
         ) : (
@@ -58,23 +58,23 @@ function CategoryCard({ cat, onClick }) {
         <div className="absolute inset-0 bg-primary-900/30 transition-opacity duration-300 opacity-0 group-hover:opacity-100" />
 
         {/* Счётчик товаров */}
-        <span className="absolute top-3 right-3 text-xs px-2.5 py-1 font-medium tracking-wide bg-white/90 text-stone-700 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300">
+        <span className="absolute top-4 right-4 text-sm px-3 py-1.5 font-medium tracking-wide bg-white/90 text-stone-700 group-hover:bg-primary-600 group-hover:text-white transition-colors duration-300">
           {cat.count ?? ''}
         </span>
 
         {/* Подсказка «Смотреть» при наведении */}
-        <span className="absolute bottom-3 left-1/2 -translate-x-1/2 text-xs text-white px-3 py-1 bg-primary-600/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
+        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 text-sm text-white px-4 py-2 bg-primary-600/90 opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">
           Смотреть товары →
         </span>
       </div>
 
       {/* Текст */}
-      <h3 className="font-display text-base leading-snug mb-1 transition-colors text-stone-900 group-hover:text-primary-700">
+      <h3 className="font-display text-lg md:text-xl leading-snug mb-1.5 transition-colors text-stone-900 group-hover:text-primary-700">
         {cat.label}
       </h3>
 
       {cat.description && (
-        <p className="text-xs text-stone-500 leading-relaxed line-clamp-2">
+        <p className="text-sm text-stone-500 leading-relaxed line-clamp-2">
           {cat.description}
         </p>
       )}
@@ -101,8 +101,8 @@ export default function ProductGrid() {
           <h1 className="section-title">Наши коллекции</h1>
         </div>
 
-        {/* ── Карточки категорий ── */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 items-start">
+        {/* ── Карточки категорий: 2 колонки — крупные ── */}
+        <div className="grid grid-cols-2 gap-6 md:gap-8 items-start">
           {loading
             ? Array.from({ length: 4 }).map((_, i) => <SkeletonCategory key={i} />)
             : categories.map(cat => (
