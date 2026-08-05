@@ -3,6 +3,8 @@
   "private": true,
   "version": "0.0.1",
   "scripts": {
+    "sync-images": "node scripts/sync-product-images.js",
+    "prebuild": "node scripts/sync-product-images.js",
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
