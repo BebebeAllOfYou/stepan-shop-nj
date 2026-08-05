@@ -94,7 +94,9 @@ export function useProducts({ initialCategory = 'all' } = {}) {
     products,
     allProducts,
     categories,
-    loading: loadingP || loadingPrices,
+    // Показываем товары сразу из локального JSON (быстро).
+    // Цены из Google Sheets обновятся в фоне — без блокировки рендера.
+    loading: loadingP,
     error:   errorP,
     activeCategory,
     setActiveCategory: handleSetCategory,
