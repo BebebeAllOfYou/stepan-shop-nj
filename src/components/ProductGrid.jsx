@@ -17,6 +17,7 @@
 'use client'
 
 import { useRouter }   from 'next/navigation'
+import Image          from 'next/image'
 import { useProducts } from '../hooks/useProducts'
 
 /** Скелетон карточки категории */
@@ -40,10 +41,12 @@ function CategoryCard({ cat, onClick }) {
       {/* Картинка */}
       <div className="relative aspect-[4/3] overflow-hidden bg-stone-100 mb-3">
         {cat.image ? (
-          <img
+          <Image
             src={cat.image}
             alt={cat.label}
-            className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 25vw"
+            className="object-cover transition-all duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-stone-300 text-sm">

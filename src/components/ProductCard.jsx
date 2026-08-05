@@ -32,20 +32,13 @@ export default function ProductCard({ product = {}, onCardClick }) {
 
   const fmt = n => Number(n).toLocaleString('ru-RU')
 
-  // ── Список кандидатов на фотографии ────────────────────────────────────────
-  // Если в JSON есть поле images[] — используем его.
-  // Иначе — основное фото + авто-поиск в папке product_{id}/.
+  // ── Список фотографий ──────────────────────────────────────────────
+  // Используем массив images[], если он передан, иначе только основное фото image.
+  // Это полностью устраняет избыточные 404-запросы к оптимизатору Next.js.
   const candidateImages = useMemo(() => {
     if (Array.isArray(images) && images.length > 0) return images
-    const folder = `/images/products/product_${id}`
-    return [
-      image,
-      `${folder}/photo_1.jpg`,
-      `${folder}/photo_2.jpg`,
-      `${folder}/photo_3.jpg`,
-      `${folder}/photo_4.jpg`,
-    ].filter(Boolean)
-  }, [id, image, images])
+    return image ? [image] : []
+  }, [image, images])
 
   // Отслеживаем сломанные картинки по их URL (не по индексу!) ─────────────────
   // Это исправляет баг: после удаления первого элемента индексы

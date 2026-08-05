@@ -8,6 +8,7 @@
 'use client'
 
 import Link             from 'next/link'
+import Image            from 'next/image'
 import { useCartContext } from '../context/CartContext'
 import { useCompany }     from '../hooks/useCompany'
 
@@ -24,9 +25,9 @@ function CartItem({ item, discountPercent }) {
   return (
     <div className="flex gap-3 py-3 border-b border-stone-100 last:border-0">
       {/* Фото */}
-      <div className="w-12 h-14 bg-stone-100 flex-shrink-0 overflow-hidden">
+      <div className="w-12 h-14 bg-stone-100 flex-shrink-0 overflow-hidden relative">
         {item.image
-          ? <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          ? <Image src={item.image} alt={item.name} fill sizes="48px" className="object-cover" />
           : <div className="w-full h-full flex items-center justify-center text-stone-300 text-[10px]">фото</div>
         }
       </div>
